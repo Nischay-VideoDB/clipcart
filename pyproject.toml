@@ -1,0 +1,15 @@
+[project]
+name = "clipcart"
+version = "0.1.0"
+description = "Turn live-selling videos into shoppable vertical clips"
+requires-python = ">=3.11"
+dependencies = [
+    "videodb",
+    "openai",
+    "requests",
+    "python-dotenv",
+    "beautifulsoup4",
+    "playwright>=1.60.0",
+    "flask>=3.0",
+]
+

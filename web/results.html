@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClipCart — Your Shoppable Clips</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #FAF7F2;
+    --orange:   #E85A18;
+    --orange-lt:#FFF0E8;
+    --dark:     #1A1232;
+    --muted:    #7A7589;
+    --border:   #E8E3DA;
+    --white:    #FFFFFF;
+    --green:    #18a34a;
+  }
+
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
+
+  /* ── NAV ─────────────────────────────────────────────── */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 60px; background: var(--bg);
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 18px; text-decoration: none; color: var(--dark); }
+  .nav-back { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 500; color: var(--muted); text-decoration: none; }
+  .nav-back:hover { color: var(--dark); }
+  .nav-back svg { width: 16px; height: 16px; }
+  .nav-actions { display: flex; gap: 12px; align-items: center; }
+  .btn-ghost { background: none; border: 1.5px solid var(--border); padding: 8px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; color: var(--dark); text-decoration: none; display: inline-block; }
+  .btn-primary { background: var(--orange); color: #fff; border: none; padding: 9px 22px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .btn-primary:hover { background: #cf4e12; }
+
+  /* ── PAGE HEADER ─────────────────────────────────────── */
+  .page-header {
+    padding: 40px 60px 32px; max-width: 1100px; margin: 0 auto;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+  }
+  .page-title { font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 900; text-transform: uppercase; }
+  .page-title span { color: var(--orange); }
+  .page-subtitle { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .header-stats { display: flex; gap: 24px; flex-shrink: 0; }
+  .hstat { text-align: center; }
+  .hstat-num { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 900; color: var(--orange); }
+  .hstat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── PROCESSING STATE ────────────────────────────────── */
+  .processing-wrap {
+    max-width: 1100px; margin: 0 auto 40px; padding: 0 60px;
+  }
+  .processing-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: 16px;
+    padding: 60px 40px; display: flex; flex-direction: column; align-items: center;
+    gap: 20px; text-align: center;
+    box-shadow: 0 4px 24px rgba(26,18,50,.06);
+  }
+  .proc-ring {
+    width: 64px; height: 64px;
+    border: 4px solid var(--orange-lt); border-top-color: var(--orange);
+    border-radius: 50%; animation: spin .9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .proc-title { font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 900; text-transform: uppercase; }
+  .proc-title span { color: var(--orange); }
+  .proc-msg { font-size: 14px; color: var(--muted); max-width: 420px; line-height: 1.6; }
+  .proc-steps { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+  .proc-step {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; color: var(--muted);
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 20px; padding: 5px 14px;
+  }
+  .proc-step.active { color: var(--orange); border-color: var(--orange); background: var(--orange-lt); }
+  .proc-step.done { color: var(--green); border-color: #bbf7d0; background: #f0fdf4; }
+  .proc-step svg { width: 12px; height: 12px; }
+
+  /* ── RESULTS CONTENT ─────────────────────────────────── */
+  .results-wrap { max-width: 1100px; margin: 0 auto 60px; padding: 0 60px; display: none; }
+  .results-wrap.visible { display: block; }
+
+  /* ── APP WIDGET ──────────────────────────────────────── */
+  .app-widget {
+    background: var(--white); border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(26,18,50,.12), 0 4px 16px rgba(26,18,50,.06);
+    overflow: hidden; border: 1px solid var(--border);
+  }
+  .widget-header {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .widget-header .label { font-size: 13px; font-weight: 600; color: var(--dark); }
+  .widget-header .filename { font-size: 12px; color: var(--muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge-status { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; }
+  .badge-status svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .badge-status.done { color: var(--green); }
+  .badge-status.running { color: var(--orange); }
+  .badge-status.error { color: #dc2626; }
+  .badge-status.idle { color: var(--muted); }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--orange-lt); border-top-color: var(--orange); border-radius: 50%; animation: spin .7s linear infinite; }
+  .btn-newrun { background: var(--dark); color: #fff; border: none; padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; flex-shrink: 0; }
+  .btn-newrun:hover { opacity: .85; }
+
+  .widget-body { display: flex; height: 440px; }
+
+  /* sidebar */
+  .widget-sidebar {
+    width: 64px; border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 12px 0; gap: 4px; background: #FAFAF8;
+  }
+  .sidebar-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 8px 6px; border-radius: 8px; cursor: pointer; width: 52px;
+    font-size: 10px; color: var(--muted); font-weight: 500; transition: background .15s;
+  }
+  .sidebar-item svg { width: 18px; height: 18px; }
+  .sidebar-item:hover { background: var(--orange-lt); color: var(--orange); }
+  .sidebar-item.active { background: var(--orange-lt); color: var(--orange); }
+
+  /* video pane */
+  .widget-video { flex: 1; min-width: 0; display: flex; flex-direction: column; background: #0a0a0a; position: relative; }
+  #video-player { width: 100%; flex: 1; min-height: 0; object-fit: contain; display: block; }
+
+  /* price overlay */
+  .video-price-overlay {
+    position: absolute; bottom: 88px; left: 12px; right: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+    border-radius: 8px; padding: 8px 12px;
+  }
+  .overlay-price { color: #fff; font-weight: 700; font-size: 16px; }
+  .overlay-product { color: rgba(255,255,255,.75); font-size: 11px; margin-top: 2px; }
+  .overlay-buy {
+    background: var(--orange); color: #fff; border: none; padding: 6px 14px;
+    border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
+    text-decoration: none; display: inline-block; white-space: nowrap;
+  }
+
+  /* main timeline */
+  .main-timeline {
+    height: 36px; background: #0e0e0e; padding: 0 12px;
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    border-top: 1px solid rgba(255,255,255,.06);
+  }
+  .tl-label { font-size: 9px; color: rgba(255,255,255,.35); white-space: nowrap; letter-spacing: .3px; }
+  .timeline-track { flex: 1; height: 5px; background: rgba(255,255,255,.12); border-radius: 3px; position: relative; }
+  .timeline-clip { position: absolute; top: 0; height: 100%; background: var(--orange); border-radius: 3px; opacity: .7; cursor: pointer; transition: opacity .15s; }
+  .timeline-clip:hover { opacity: 1; }
+  .timeline-clip.active { opacity: 1; box-shadow: 0 0 0 2px #fff; }
+  .tl-playhead { position: absolute; top: -4px; width: 2px; height: 13px; background: #fff; border-radius: 1px; pointer-events: none; transition: left .25s linear; }
+
+  /* video controls */
+  .video-controls {
+    height: 44px; background: #1a1a1a; padding: 0 12px;
+    display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+  .ctrl-btn { background: none; border: none; color: rgba(255,255,255,.85); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 4px; flex-shrink: 0; }
+  .ctrl-btn:hover { color: #fff; background: rgba(255,255,255,.1); }
+  .ctrl-btn svg { width: 16px; height: 16px; }
+  .ctrl-time { font-size: 11px; color: rgba(255,255,255,.6); white-space: nowrap; min-width: 36px; text-align: center; font-variant-numeric: tabular-nums; }
+  .ctrl-scrubber { flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px; background: rgba(255,255,255,.2); outline: none; cursor: pointer; }
+  .ctrl-scrubber::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #fff; cursor: pointer; box-shadow: 0 0 0 2px rgba(255,255,255,.3); }
+  .ctrl-volume { -webkit-appearance: none; width: 60px; height: 3px; border-radius: 2px; background: rgba(255,255,255,.2); outline: none; cursor: pointer; flex-shrink: 0; }
+  .ctrl-volume::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #fff; cursor: pointer; }
+
+  /* right panel */
+  .widget-clips { width: 240px; border-left: 1px solid var(--border); display: flex; flex-direction: column; background: #FAFAF8; }
+  .clips-panel-header { padding: 12px 14px 8px; font-size: 12px; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .clips-panel-header svg { width: 13px; height: 13px; color: var(--orange); }
+  .tab-panel { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
+  .tab-panel.active { display: flex; }
+  .clip-list { padding: 8px; display: flex; flex-direction: column; gap: 6px; width: 100%; }
+  .clip-card { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; cursor: pointer; border: 1.5px solid transparent; transition: all .15s; background: var(--white); }
+  .clip-card:hover { border-color: var(--orange); background: var(--orange-lt); }
+  .clip-card.active { border-color: var(--orange); background: var(--orange-lt); }
+  .clip-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: var(--border); }
+  .clip-info { flex: 1; min-width: 0; }
+  .clip-name { font-size: 11px; font-weight: 600; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+  .clip-time { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .clip-check { width: 16px; height: 16px; border-radius: 4px; background: var(--orange); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .clip-check svg { width: 10px; height: 10px; color: #fff; }
+
+  /* info panels */
+  .info-panel { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .info-row { display: flex; flex-direction: column; gap: 4px; }
+  .info-label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+  .info-value { font-size: 12px; color: var(--dark); line-height: 1.5; word-break: break-word; }
+  .info-value.mono { font-family: monospace; font-size: 11px; background: var(--bg); border-radius: 4px; padding: 6px 8px; border: 1px solid var(--border); }
+  .info-chip { display: inline-block; background: var(--orange-lt); color: var(--orange); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; margin-right: 4px; margin-bottom: 4px; }
+  .info-btn { background: var(--dark); color: #fff; border: none; border-radius: 6px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; display: block; width: 100%; }
+  .info-btn:hover { opacity: .85; }
+  .info-btn.secondary { background: var(--bg); color: var(--dark); border: 1.5px solid var(--border); }
+  .info-btn.secondary:hover { border-color: var(--orange); color: var(--orange); }
+  .copy-feedback { font-size: 11px; color: var(--green); text-align: center; display: none; }
+  .copy-feedback.show { display: block; }
+
+  .shopee-row { padding: 10px 14px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
+  .shopee-icon { width: 18px; height: 18px; }
+  .toggle-track { width: 30px; height: 17px; background: var(--border); border-radius: 9px; margin-left: auto; position: relative; cursor: pointer; transition: background .2s; }
+  .toggle-track.on { background: var(--orange); }
+  .toggle-thumb { width: 13px; height: 13px; background: #fff; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: left .2s; }
+  .toggle-track.on .toggle-thumb { left: 15px; }
+
+  /* ── CLIP DETAIL CARDS ───────────────────────────────── */
+  .clip-cards-section { margin-top: 32px; }
+  .section-title { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 16px; }
+  .clip-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .clip-detail-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; transition: box-shadow .2s;
+  }
+  .clip-detail-card:hover { box-shadow: 0 8px 24px rgba(26,18,50,.08); }
+  .cdc-thumb { width: 100%; height: 160px; object-fit: cover; background: var(--border); display: block; }
+  .cdc-body { padding: 16px; }
+  .cdc-name { font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+  .cdc-hook { font-size: 12px; color: var(--orange); font-weight: 600; margin-bottom: 8px; line-height: 1.4; }
+  .cdc-caption { font-size: 12px; color: var(--muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
+  .cdc-footer { display: flex; align-items: center; justify-content: space-between; }
+  .cdc-price { font-size: 14px; font-weight: 700; color: var(--dark); }
+  .cdc-buy { background: var(--orange); color: #fff; border: none; padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; }
+  .cdc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+  .cdc-tag { font-size: 10px; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="logo">
+    <svg viewBox="0 0 32 32" fill="none" width="32" height="32">
+      <rect width="32" height="32" rx="8" fill="#E85A18"/>
+      <path d="M8 22 L14 10 L20 18 L24 14" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="24" cy="14" r="2.5" fill="#fff"/>
+    </svg>
+    ClipCart
+  </a>
+  <a href="/" class="nav-back">
+    <svg viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Back to Home
+  </a>
+  <div class="nav-actions">
+    <a href="/" class="btn-ghost">New Run</a>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header" id="page-header">
+  <div>
+    <div class="page-title" id="page-title">YOUR <span>SHOPPABLE CLIPS</span></div>
+    <div class="page-subtitle" id="page-subtitle">Processing your video — this may take a few minutes.</div>
+  </div>
+  <div class="header-stats" id="header-stats" style="display:none">
+    <div class="hstat"><div class="hstat-num" id="hstat-clips">0</div><div class="hstat-label">Clips</div></div>
+    <div class="hstat"><div class="hstat-num">90%</div><div class="hstat-label">Time Saved</div></div>
+    <div class="hstat"><div class="hstat-num" id="hstat-products">0</div><div class="hstat-label">Products</div></div>
+  </div>
+</div>
+
+<!-- PROCESSING STATE -->
+<div class="processing-wrap" id="processing-wrap">
+  <div class="processing-card">
+    <div class="proc-ring" id="proc-ring"></div>
+    <div class="proc-title">GENERATING YOUR <span>CLIPS</span></div>
+    <div class="proc-msg" id="proc-msg">Uploading and indexing video — sit tight, this takes a few minutes on first run.</div>
+    <div class="proc-steps">
+      <div class="proc-step" id="step-upload">
+        <svg viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 4l3-3 3 3M1 10h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Upload & Index
+      </div>
+      <div class="proc-step" id="step-match">
+        <svg viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/><path d="M4 6l1.5 1.5L8 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Match Products
+      </div>
+      <div class="proc-step" id="step-clips">
+        <svg viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 2V1M8 2V1M4 11v-1M8 11v-1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Generate Clips
+      </div>
+      <div class="proc-step" id="step-copy">
+        <svg viewBox="0 0 12 12" fill="none"><path d="M2 4h8M2 7h5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Write Copy
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS CONTENT (shown when clips ready) -->
+<div class="results-wrap" id="results-wrap">
+
+  <!-- App Widget -->
+  <div class="app-widget">
+    <div class="widget-header">
+      <span class="label">Live Video</span>
+      <span class="filename" id="widget-filename">—</span>
+      <div class="badge-status done" id="widget-badge">
+        <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7l2 2 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Analysis complete</span>
+      </div>
+      <a href="/" class="btn-newrun">New Run</a>
+    </div>
+
+    <div class="widget-body">
+      <!-- Sidebar -->
+      <div class="widget-sidebar">
+        <div class="sidebar-item active" data-tab="clips" onclick="switchTab('clips')" title="Clips">
+          <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 4V2M12 4V2M6 16v-2M12 16v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Clips
+        </div>
+        <div class="sidebar-item" data-tab="trim" onclick="switchTab('trim')" title="Trim">
+          <svg viewBox="0 0 18 18" fill="none"><path d="M2 9h14M9 2v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Trim
+        </div>
+        <div class="sidebar-item" data-tab="captions" onclick="switchTab('captions')" title="Captions">
+          <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 9h2M8 9h5M5 11.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Captions
+        </div>
+        <div class="sidebar-item" data-tab="price" onclick="switchTab('price')" title="Price">
+          <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M9 5v8M6.5 7.5h3a1.5 1.5 0 010 3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Price
+        </div>
+        <div class="sidebar-item" data-tab="export" onclick="switchTab('export')" title="Export">
+          <svg viewBox="0 0 18 18" fill="none"><path d="M9 2v10M5 8l4 4 4-4M3 14h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Export
+        </div>
+      </div>
+
+      <!-- Video -->
+      <div class="widget-video">
+        <video id="video-player" playsinline></video>
+
+        <div class="video-price-overlay" id="price-overlay" style="display:none">
+          <div>
+            <div class="overlay-price" id="overlay-price"></div>
+            <div class="overlay-product" id="overlay-name"></div>
+          </div>
+          <a class="overlay-buy" id="overlay-buy" href="#" target="_blank" rel="noopener">Buy Now</a>
+        </div>
+
+        <!-- Bar 1: main timeline -->
+        <div class="main-timeline">
+          <span class="tl-label">FULL VIDEO</span>
+          <div class="timeline-track" id="timeline-track">
+            <div class="tl-playhead" id="tl-playhead" style="left:0%"></div>
+          </div>
+          <span class="tl-label" id="tl-total">—</span>
+        </div>
+
+        <!-- Bar 2: video controls -->
+        <div class="video-controls">
+          <button class="ctrl-btn" id="btn-play-pause" onclick="togglePlay()" title="Play / Pause">
+            <svg id="icon-play" viewBox="0 0 16 16" fill="none"><polygon points="3,1 15,8 3,15" fill="currentColor"/></svg>
+            <svg id="icon-pause" viewBox="0 0 16 16" fill="none" style="display:none"><rect x="2" y="1" width="4" height="14" rx="1" fill="currentColor"/><rect x="10" y="1" width="4" height="14" rx="1" fill="currentColor"/></svg>
+          </button>
+          <span class="ctrl-time" id="ctrl-current">00:00</span>
+          <input type="range" class="ctrl-scrubber" id="ctrl-scrubber" min="0" max="100" value="0" step="0.1">
+          <span class="ctrl-time" id="ctrl-duration">00:00</span>
+          <button class="ctrl-btn" id="btn-mute" onclick="toggleMute()" title="Mute / Unmute">
+            <svg id="icon-vol" viewBox="0 0 16 16" fill="none"><path d="M2 5h3l4-3v12l-4-3H2V5z" fill="currentColor"/><path d="M11 5c1 .8 1.5 1.8 1.5 3s-.5 2.2-1.5 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M13 3c1.5 1.3 2.5 3 2.5 5s-1 3.7-2.5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <svg id="icon-mute" viewBox="0 0 16 16" fill="none" style="display:none"><path d="M2 5h3l4-3v12l-4-3H2V5z" fill="currentColor"/><path d="M11 6l4 4M15 6l-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
+          <input type="range" class="ctrl-volume" id="ctrl-volume" min="0" max="1" value="1" step="0.02" oninput="setVolume(this.value)">
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="widget-clips">
+        <div class="clips-panel-header">
+          <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.2 2.8L11 4.3 8.7 6.5l.6 2.9-2.8-1.5-2.8 1.5.6-2.9L2 4.3l3.3-.5L6.5 1z" fill="currentColor"/></svg>
+          <span id="panel-title">AI Generated Clips</span>
+        </div>
+
+        <div id="tab-clips" class="tab-panel active">
+          <div class="clip-list" id="clip-list"></div>
+        </div>
+        <div id="tab-trim" class="tab-panel">
+          <div class="info-panel" id="trim-panel"></div>
+        </div>
+        <div id="tab-captions" class="tab-panel">
+          <div class="info-panel" id="captions-panel"></div>
+        </div>
+        <div id="tab-price" class="tab-panel">
+          <div class="info-panel" id="price-panel"></div>
+        </div>
+        <div id="tab-export" class="tab-panel">
+          <div class="info-panel" id="export-panel"></div>
+        </div>
+
+        <div class="shopee-row">
+          <img class="shopee-icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/512px-Shopee.svg.png" alt="Shopee">
+          Link to Shopee
+          <div class="toggle-track" id="shopee-toggle" onclick="toggleShopee()"><div class="toggle-thumb"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clip detail cards -->
+  <div class="clip-cards-section" id="clip-cards-section"></div>
+</div>
+
+<script>
+  // ── state ──────────────────────────────────────────────
+  let clips = [];
+  let hlsPlayer = null;
+  let activeIdx = -1;
+  let activeTab = 'clips';
+  let pollTimer = null;
+  let shopeeLinked = false;
+  const VIDEO_DURATION_EST = 360;
+
+  const TAB_TITLES = { clips: 'AI Generated Clips', trim: 'Trim Window', captions: 'AI Captions', price: 'Price & Link', export: 'Export Clip' };
+
+  // ── utils ──────────────────────────────────────────────
+  function fmt(sec) {
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = Math.floor(sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  }
+
+  // ── processing steps UI ───────────────────────────────
+  function markStep(id, state) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'proc-step ' + state;
+  }
+
+  function updateProcessingUI(status, message) {
+    document.getElementById('proc-msg').textContent = message;
+    const msg = message.toLowerCase();
+    if (msg.includes('upload') || msg.includes('index')) {
+      markStep('step-upload', 'active');
+    } else if (msg.includes('match') || msg.includes('window') || msg.includes('processing')) {
+      markStep('step-upload', 'done'); markStep('step-match', 'active');
+    } else if (msg.includes('clip') || msg.includes('stream') || msg.includes('built')) {
+      markStep('step-upload', 'done'); markStep('step-match', 'done'); markStep('step-clips', 'active');
+    } else if (msg.includes('copy') || msg.includes('hook') || msg.includes('caption') || msg.includes('wrote')) {
+      markStep('step-upload', 'done'); markStep('step-match', 'done'); markStep('step-clips', 'done'); markStep('step-copy', 'active');
+    }
+    if (status === 'done') {
+      ['step-upload','step-match','step-clips','step-copy'].forEach(s => markStep(s, 'done'));
+    }
+  }
+
+  // ── polling ────────────────────────────────────────────
+  async function pollStatus() {
+    pollTimer = setInterval(async () => {
+      try {
+        const data = await fetch('/api/status').then(r => r.json());
+        updateProcessingUI(data.status, data.message || '');
+
+        if (data.status === 'done') {
+          clearInterval(pollTimer);
+          await showResults();
+        } else if (data.status === 'error') {
+          clearInterval(pollTimer);
+          document.getElementById('proc-msg').textContent = 'Error: ' + data.message;
+          document.getElementById('proc-ring').style.borderTopColor = '#dc2626';
+          document.getElementById('page-subtitle').textContent = data.message;
+        } else if (data.status === 'idle') {
+          clearInterval(pollTimer);
+          // pipeline finished before we got here — try loading clips anyway
+          await showResults();
+        }
+      } catch (_) {}
+    }, 2000);
+  }
+
+  // ── show results ───────────────────────────────────────
+  async function showResults() {
+    const clipsResp = await fetch('/api/clips');
+    clips = await clipsResp.json();
+
+    document.getElementById('processing-wrap').style.display = 'none';
+    document.getElementById('results-wrap').classList.add('visible');
+    document.getElementById('page-subtitle').textContent = `${clips.length} clip${clips.length !== 1 ? 's' : ''} ready to share`;
+    document.getElementById('page-title').innerHTML = 'YOUR <span>SHOPPABLE CLIPS</span>';
+
+    document.getElementById('header-stats').style.display = 'flex';
+    document.getElementById('hstat-clips').textContent = clips.length;
+    document.getElementById('hstat-products').textContent = clips.length;
+
+    wireVideoEvents();
+    renderClips();
+    renderDetailCards();
+  }
+
+  // ── clip rendering ─────────────────────────────────────
+  function renderClips() {
+    const list = document.getElementById('clip-list');
+    if (!clips.length) {
+      list.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:12px">No clips found.</div>';
+      return;
+    }
+
+    const totalDur = Math.max(...clips.map(c => c.end), VIDEO_DURATION_EST);
+    document.getElementById('tl-total').textContent = fmt(totalDur);
+
+    const track = document.getElementById('timeline-track');
+    track.innerHTML = '<div class="tl-playhead" id="tl-playhead" style="left:0%"></div>';
+    clips.forEach((clip, i) => {
+      const left = (clip.start / totalDur * 100).toFixed(1);
+      const width = Math.max((clip.end - clip.start) / totalDur * 100, 2).toFixed(1);
+      const marker = document.createElement('div');
+      marker.className = 'timeline-clip';
+      marker.style.left = left + '%';
+      marker.style.width = width + '%';
+      marker.title = clip.name;
+      marker.addEventListener('click', () => playClip(i));
+      track.appendChild(marker);
+    });
+
+    list.innerHTML = '';
+    clips.forEach((clip, i) => {
+      const card = document.createElement('div');
+      card.className = 'clip-card';
+      card.innerHTML = `
+        ${clip.image_url ? `<img class="clip-thumb" src="${clip.image_url}" alt="" onerror="this.style.background='#e8e3da'">` : '<div class="clip-thumb"></div>'}
+        <div class="clip-info">
+          <div class="clip-name">${clip.name}</div>
+          <div class="clip-time">${fmt(clip.start)} – ${fmt(clip.end)}</div>
+        </div>
+        <div class="clip-check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 3.5-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+      card.addEventListener('click', () => playClip(i));
+      list.appendChild(card);
+    });
+
+    playClip(0);
+  }
+
+  function renderDetailCards() {
+    const section = document.getElementById('clip-cards-section');
+    if (!clips.length) { section.style.display = 'none'; return; }
+    section.innerHTML = `<div class="section-title">Clip Details &amp; Copy</div><div class="clip-cards-grid" id="cards-grid"></div>`;
+    const grid = document.getElementById('cards-grid');
+    clips.forEach(clip => {
+      const tags = (clip.hashtags || []).map(h => `<span class="cdc-tag">#${h}</span>`).join(' ');
+      const card = document.createElement('div');
+      card.className = 'clip-detail-card';
+      card.innerHTML = `
+        <img class="cdc-thumb" src="${clip.image_url || ''}" alt="${clip.name}" onerror="this.style.background='#e8e3da'">
+        <div class="cdc-body">
+          <div class="cdc-name">${clip.name}</div>
+          <div class="cdc-hook">${clip.hook || ''}</div>
+          <div class="cdc-caption">${clip.caption || ''}</div>
+          <div class="cdc-tags">${tags}</div>
+          <div class="cdc-footer">
+            <span class="cdc-price">${clip.price}</span>
+            <a class="cdc-buy" href="${clip.buy_url}" target="_blank" rel="noopener">Buy Now</a>
+          </div>
+        </div>`;
+      grid.appendChild(card);
+    });
+  }
+
+  // ── play a clip ────────────────────────────────────────
+  function playClip(idx) {
+    const clip = clips[idx];
+    if (!clip) return;
+    activeIdx = idx;
+
+    document.getElementById('widget-filename').textContent = clip.name;
+
+    const video = document.getElementById('video-player');
+    if (hlsPlayer) { hlsPlayer.destroy(); hlsPlayer = null; }
+
+    video.muted = false;
+    video.volume = parseFloat(document.getElementById('ctrl-volume').value);
+
+    if (Hls.isSupported()) {
+      hlsPlayer = new Hls();
+      hlsPlayer.loadSource(clip.stream_url);
+      hlsPlayer.attachMedia(video);
+      hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => setPlayIcon(false));
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = clip.stream_url;
+    }
+
+    document.getElementById('price-overlay').style.display = 'flex';
+    document.getElementById('overlay-price').textContent = clip.price;
+    document.getElementById('overlay-name').textContent = clip.name;
+    document.getElementById('overlay-buy').href = clip.buy_url;
+
+    setCtrlTime(0, 0);
+    document.getElementById('ctrl-scrubber').value = 0;
+    setPlayIcon(false);
+
+    document.querySelectorAll('.clip-card').forEach((el, i) => el.classList.toggle('active', i === idx));
+    document.querySelectorAll('.timeline-clip').forEach((el, i) => el.classList.toggle('active', i === idx));
+
+    renderInfoPanels(clip);
+  }
+
+  // ── video controls ─────────────────────────────────────
+  function togglePlay() {
+    const v = document.getElementById('video-player');
+    v.paused ? v.play().catch(() => {}) : v.pause();
+  }
+
+  function toggleMute() {
+    const v = document.getElementById('video-player');
+    v.muted = !v.muted;
+    document.getElementById('icon-vol').style.display  = v.muted ? 'none' : '';
+    document.getElementById('icon-mute').style.display = v.muted ? ''     : 'none';
+    document.getElementById('ctrl-volume').value = v.muted ? 0 : v.volume;
+  }
+
+  function setVolume(val) {
+    const v = document.getElementById('video-player');
+    v.volume = parseFloat(val);
+    if (v.volume > 0 && v.muted) {
+      v.muted = false;
+      document.getElementById('icon-vol').style.display  = '';
+      document.getElementById('icon-mute').style.display = 'none';
+    }
+  }
+
+  function setPlayIcon(playing) {
+    document.getElementById('icon-play').style.display  = playing ? 'none' : '';
+    document.getElementById('icon-pause').style.display = playing ? ''     : 'none';
+  }
+
+  function setCtrlTime(current, duration) {
+    document.getElementById('ctrl-current').textContent  = fmt(current);
+    document.getElementById('ctrl-duration').textContent = fmt(duration);
+  }
+
+  function wireVideoEvents() {
+    const v = document.getElementById('video-player');
+    v.addEventListener('play',  () => setPlayIcon(true));
+    v.addEventListener('pause', () => setPlayIcon(false));
+    v.addEventListener('ended', () => setPlayIcon(false));
+    v.addEventListener('loadedmetadata', () => setCtrlTime(0, v.duration || 0));
+    v.addEventListener('timeupdate', () => {
+      const dur = v.duration || 0;
+      if (!dur) return;
+      const cur = v.currentTime;
+      setCtrlTime(cur, dur);
+      document.getElementById('ctrl-scrubber').value = (cur / dur * 100).toFixed(2);
+      if (activeIdx >= 0 && clips[activeIdx]) {
+        const totalDur = Math.max(...clips.map(c => c.end), VIDEO_DURATION_EST);
+        const absTime = clips[activeIdx].start + cur;
+        document.getElementById('tl-playhead').style.left = Math.min(absTime / totalDur * 100, 100).toFixed(2) + '%';
+      }
+    });
+    document.getElementById('ctrl-scrubber').addEventListener('input', e => {
+      const v = document.getElementById('video-player');
+      if (v.duration) v.currentTime = parseFloat(e.target.value) / 100 * v.duration;
+    });
+  }
+
+  // ── sidebar tabs ───────────────────────────────────────
+  function switchTab(tab) {
+    activeTab = tab;
+    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+    document.querySelectorAll('.tab-panel').forEach(el => el.classList.toggle('active', el.id === 'tab-' + tab));
+    document.getElementById('panel-title').textContent = TAB_TITLES[tab] || tab;
+    if (activeIdx >= 0) renderInfoPanels(clips[activeIdx]);
+  }
+
+  function renderInfoPanels(clip) {
+    document.getElementById('trim-panel').innerHTML = `
+      <div class="info-row"><div class="info-label">Product</div><div class="info-value">${clip.name}</div></div>
+      <div class="info-row"><div class="info-label">Start</div><div class="info-value mono">${fmt(clip.start)} &nbsp;(${clip.start.toFixed(2)}s)</div></div>
+      <div class="info-row"><div class="info-label">End</div><div class="info-value mono">${fmt(clip.end)} &nbsp;(${clip.end.toFixed(2)}s)</div></div>
+      <div class="info-row"><div class="info-label">Duration</div><div class="info-value mono">${(clip.end - clip.start).toFixed(1)}s</div></div>`;
+
+    const tags = (clip.hashtags || []).map(h => `<span class="info-chip">#${h}</span>`).join('');
+    document.getElementById('captions-panel').innerHTML = `
+      <div class="info-row"><div class="info-label">Hook</div><div class="info-value">${clip.hook || '—'}</div></div>
+      <div class="info-row"><div class="info-label">Caption</div><div class="info-value">${clip.caption || '—'}</div></div>
+      <div class="info-row"><div class="info-label">Hashtags</div><div class="info-value">${tags || '—'}</div></div>
+      <button class="info-btn secondary" onclick="copyCaption(${activeIdx})">Copy Caption</button>
+      <div class="copy-feedback" id="copy-caption-fb">Copied!</div>`;
+
+    document.getElementById('price-panel').innerHTML = `
+      <div class="info-row"><div class="info-label">Price</div><div class="info-value" style="font-size:22px;font-weight:700;color:var(--orange)">${clip.price}</div></div>
+      <div class="info-row"><div class="info-label">Product URL</div><div class="info-value mono">${clip.buy_url}</div></div>
+      <a class="info-btn" href="${clip.buy_url}" target="_blank" rel="noopener">Open Product Page</a>
+      <button class="info-btn secondary" onclick="copyText('${clip.buy_url}', 'copy-url-fb')">Copy URL</button>
+      <div class="copy-feedback" id="copy-url-fb">Copied!</div>`;
+
+    document.getElementById('export-panel').innerHTML = `
+      <div class="info-row"><div class="info-label">HLS Stream URL</div><div class="info-value mono" style="font-size:10px">${clip.stream_url}</div></div>
+      <a class="info-btn" href="${clip.stream_url}" target="_blank" rel="noopener">Open in Browser</a>
+      <button class="info-btn secondary" onclick="copyText('${clip.stream_url}', 'copy-stream-fb')">Copy Stream URL</button>
+      <div class="copy-feedback" id="copy-stream-fb">Copied!</div>
+      <div class="info-row" style="margin-top:4px"><div class="info-label">VLC</div><div class="info-value" style="font-size:11px;color:var(--muted)">Media &rarr; Open Network Stream &rarr; paste URL</div></div>`;
+  }
+
+  function copyText(text, feedbackId) {
+    navigator.clipboard.writeText(text).then(() => {
+      const el = document.getElementById(feedbackId);
+      if (!el) return;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2000);
+    });
+  }
+
+  function copyCaption(idx) {
+    const clip = clips[idx];
+    if (!clip) return;
+    const text = [clip.hook, '', clip.caption, '', (clip.hashtags || []).map(h => '#' + h).join(' ')].join('\n');
+    copyText(text, 'copy-caption-fb');
+  }
+
+  function toggleShopee() {
+    shopeeLinked = !shopeeLinked;
+    document.getElementById('shopee-toggle').classList.toggle('on', shopeeLinked);
+    if (shopeeLinked && activeIdx >= 0) window.open(clips[activeIdx].buy_url, '_blank', 'noopener');
+  }
+
+  // ── init ───────────────────────────────────────────────
+  (async function init() {
+    try {
+      const status = await fetch('/api/status').then(r => r.json());
+
+      if (status.status === 'done') {
+        await showResults();
+      } else if (status.status === 'running') {
+        updateProcessingUI(status.status, status.message || '');
+        pollStatus();
+      } else {
+        // idle or error — check if clips.json already has data from a previous run
+        const clipsCheck = await fetch('/api/clips').then(r => r.json());
+        if (clipsCheck.length) {
+          await showResults();
+        } else {
+          document.getElementById('proc-msg').textContent = 'No pipeline running. Go back and click Run to generate clips.';
+          document.getElementById('proc-ring').style.display = 'none';
+        }
+      }
+    } catch (_) {
+      document.getElementById('proc-msg').textContent = 'Server not reachable. Start with: uv run python web/server.py';
+      document.getElementById('proc-ring').style.display = 'none';
+    }
+  })();
+</script>
+</body>
+</html>
