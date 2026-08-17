@@ -6,7 +6,7 @@ import copy
 import json
 from pathlib import Path
 
-_FIXTURE_PATH = Path(__file__).resolve().parents[1] / "public" / "prepared_runs.v1.json"
+_FIXTURE_PATH = Path(__file__).resolve().parents[1] / "fixtures" / "prepared_runs.v1.json"
 
 
 def _load_prepared_runs() -> tuple[dict, ...]:
