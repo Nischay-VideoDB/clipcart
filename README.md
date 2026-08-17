@@ -53,8 +53,8 @@ cp .env.example .env
 ### CLI
 
 ```bash
-# run with defaults (data/the_style_soiree_live.mp4 + data/catalog.sample.json)
-uv run python -m clipcart.run
+# run with an explicit local file or public URL
+uv run python -m clipcart.run --video path/to/video.mp4
 
 # specify a video and catalog
 uv run python -m clipcart.run --video path/to/video.mp4 --catalog data/catalog.sample.json
@@ -67,8 +67,8 @@ uv run python -m clipcart.run --limit 3 --no-image-verify
 
 | Flag | Default | Description |
 |---|---|---|
-| `--video` | `data/the_style_soiree_live.mp4` | URL or local path to the source video |
-| `--catalog` | `data/catalog.sample.json` | Path to the product catalog JSON |
+| `--video` | required | URL or local path to the source video |
+| `--catalog` | `fixtures/catalog.sample.json` | Path to the product catalog JSON |
 | `--limit` | `6` | Max number of products to process |
 | `--out` | `output/clips.json` | Output path for the clips JSON |
 | `--no-image-verify` | off | Disable Kimi vision shot verification |
@@ -81,7 +81,9 @@ uv run python web/server.py
 # open http://localhost:5000
 ```
 
-The web server exposes the pipeline via a REST API and serves a gallery UI:
+The web server exposes the pipeline via a REST API and serves a gallery UI. Its
+browser-runner accepts a public HTTPS video URL only; local files remain a CLI
+feature. The browser-runner caps each job at six products to bound provider use.
 
 - `GET /api/clips` — returns the current `output/clips.json`
 - `GET /api/status` — pipeline status (`idle` / `running` / `done` / `error`)
@@ -131,6 +133,15 @@ scripts/
 data/              — sample video and catalog (not committed)
 output/            — generated clips.json (not committed)
 ```
+
+## Deployment preparation
+
+Run the Flask app as one worker with a persistent writable `CLIPCART_DATA_DIR`.
+The current in-process job status is intentionally single-worker; a horizontally
+scaled deployment needs a durable job queue and run store before it can safely
+accept concurrent jobs. `VIDEO_DB_API_KEY` is required for processing;
+`MOONSHOT_API_KEY` and Bright Data are optional enhancements with safe local
+fallbacks for copy and catalog lookup.
 
 ## Catalog JSON format
 

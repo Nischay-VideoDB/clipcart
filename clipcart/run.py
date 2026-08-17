@@ -20,8 +20,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--video",
-        default=config.SAMPLE_VIDEO_SOURCE,
-        help="URL or local file path to the source video (default: SAMPLE_VIDEO_SOURCE in config).",
+        required=True,
+        help="URL or local file path to the source video.",
     )
     parser.add_argument(
         "--catalog",

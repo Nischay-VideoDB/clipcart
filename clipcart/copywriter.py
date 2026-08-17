@@ -31,20 +31,20 @@ _FALLBACK_COPY = {
 }
 
 
-def make_client() -> OpenAI:
+def make_client() -> OpenAI | None:
     """Create an OpenAI client pointed at the Moonshot (Kimi) API.
 
     Returns:
         OpenAI: A configured client for the Moonshot base URL.
     """
-    return OpenAI(
-        api_key=get_env("MOONSHOT_API_KEY", required=True),
-        base_url="https://api.moonshot.ai/v1",
-    )
+    api_key = get_env("MOONSHOT_API_KEY")
+    if not api_key:
+        return None
+    return OpenAI(api_key=api_key, base_url="https://api.moonshot.ai/v1")
 
 
 def write_copy(
-    client: OpenAI,
+    client: OpenAI | None,
     product: dict[str, Any],
     transcript: str,
 ) -> dict[str, Any]:
@@ -64,6 +64,12 @@ def write_copy(
         f"Price: {product['price']}\n"
         f"Transcript from the clip: {transcript or '(no transcript available)'}"
     )
+
+    if client is None:
+        fallback = dict(_FALLBACK_COPY)
+        fallback["hook"] = product["name"]
+        fallback["caption"] = f"Check out {product['name']} for {product['price']}."
+        return fallback
 
     try:
         resp = client.chat.completions.create(

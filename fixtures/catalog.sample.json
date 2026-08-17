@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Floral Wrap Dress",
+    "price": "SGD 29.90",
+    "buy_url": "https://example.com/products/floral-wrap-dress",
+    "image_url": ""
+  },
+  {
+    "name": "Canvas Tote Bag",
+    "price": "SGD 18.90",
+    "buy_url": "https://example.com/products/canvas-tote-bag",
+    "image_url": ""
+  }
+]

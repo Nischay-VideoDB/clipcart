@@ -37,8 +37,8 @@ def build_clip(
 
     stream_url = tl.generate_stream()
     logger.info(
-        "Built clip for %r: %.1fs–%.1fs -> %s",
-        product["name"], start, end, stream_url,
+        "Built clip for %r: %.1fs–%.1fs",
+        product["name"], start, end,
     )
     return stream_url
 

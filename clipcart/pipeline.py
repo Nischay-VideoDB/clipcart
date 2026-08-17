@@ -19,7 +19,7 @@ def run(
     video_source: str,
     catalog_path: str = config.SAMPLE_CATALOG_PATH,
     limit: int = config.DEFAULT_LIMIT,
-    out_path: str = "output/clips.json",
+    out_path: str | None = None,
     use_image_verify: bool = True,
 ) -> list[dict[str, Any]]:
     """Run the full POC pipeline and write the gallery JSON.
@@ -38,12 +38,17 @@ def run(
     Returns:
         list[dict]: The clip records written to ``out_path``.
     """
+    if limit < 1 or limit > config.DEFAULT_LIMIT:
+        raise ValueError(f"limit must be between 1 and {config.DEFAULT_LIMIT}")
+
     kimi_client = make_client()
+    resolved_output = out_path or str(config.clips_output_path())
 
     logger.info("Loading catalog from %s (limit=%d)...", catalog_path, limit)
     products = load_catalog(
         path=catalog_path,
         token=config.get_env("BRIGHTDATA_API_TOKEN"),
+        url=config.get_env("SHOPEE_STORE_URL"),
         limit=limit,
     )
     logger.info("Loaded %d products.", len(products))
@@ -52,7 +57,7 @@ def run(
     conn = connect()
 
     logger.info("Uploading and indexing video: %s", video_source)
-    video = get_or_upload(conn, video_source)
+    video = get_or_upload(conn, video_source, cache_path=str(config.video_cache_path()))
 
     clips: list[dict[str, Any]] = []
 
@@ -93,8 +98,8 @@ def run(
         clips.append(record)
         print(f"  -> Done. Hook: {record['hook']!r}")
 
-    _write_output(clips, out_path)
-    print(f"\nWrote {len(clips)} clip(s) to {out_path}")
+    _write_output(clips, resolved_output)
+    print(f"\nWrote {len(clips)} clip(s) to {resolved_output}")
     return clips
 
 

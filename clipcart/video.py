@@ -76,7 +76,7 @@ def upload_and_index(conn: Any, source: str) -> Any:
     """
     source = str(source)
     if source.startswith("http://") or source.startswith("https://"):
-        logger.info("Uploading video from URL: %s", source)
+        logger.info("Uploading video from URL")
         video = conn.upload(url=source)
     elif Path(source).exists():
         logger.info("Uploading video from local file: %s", source)

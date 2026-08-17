@@ -11,5 +11,16 @@ dependencies = [
     "beautifulsoup4",
     "playwright>=1.60.0",
     "flask>=3.0",
+    "gunicorn>=23.0",
 ]
 
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["clipcart*"]
+exclude = ["web*"]
