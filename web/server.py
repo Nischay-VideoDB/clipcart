@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT))
 load_dotenv(ROOT / ".env")
 
 from clipcart import config  # noqa: E402
+from clipcart.prepared_demo import PREPARED_ILLUSTRATIVE_CLIPS  # noqa: E402
 from clipcart.pipeline import run as run_pipeline  # noqa: E402
 
 app = Flask(__name__, static_folder=str(ROOT / "web"))
@@ -53,7 +54,7 @@ def _set_state(status: str, message: str, progress: int = 0) -> None:
 
 def _prepared_illustrative_clips() -> str:
     """Return fixture-backed illustrative records for the public showcase only."""
-    return config.PREPARED_ILLUSTRATIVE_CLIPS_PATH.read_text(encoding="utf-8")
+    return json.dumps(PREPARED_ILLUSTRATIVE_CLIPS)
 
 
 @app.route("/")

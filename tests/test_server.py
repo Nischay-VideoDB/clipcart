@@ -46,7 +46,6 @@ def test_web_runner_requires_explicit_operator_gate(monkeypatch):
 def test_public_showcase_serves_fixture_backed_result_and_full_pages(monkeypatch):
     monkeypatch.setenv("VERCEL", "1")
     client = server.app.test_client()
-    fixture_path = server.config.PREPARED_ILLUSTRATIVE_CLIPS_PATH
 
     status = client.get("/api/status")
     clips = client.get("/api/clips")
@@ -57,7 +56,7 @@ def test_public_showcase_serves_fixture_backed_result_and_full_pages(monkeypatch
         "progress": 100,
         "status": "done",
     }
-    assert clips.get_json() == json.loads(fixture_path.read_text())
+    assert clips.get_json() == server.PREPARED_ILLUSTRATIVE_CLIPS
     assert b"Explore prepared run" in client.get("/api/showcase").data
     assert b"Prepared illustrative demo - not a live VideoDB/provider run." in client.get("/api/showcase/results").data
 

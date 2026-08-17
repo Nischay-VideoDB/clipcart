@@ -16,7 +16,6 @@ LEAD_SECONDS: float = 8.0
 DEFAULT_LIMIT: int = 6
 
 SAMPLE_CATALOG_PATH: str = str(PROJECT_ROOT / "fixtures" / "catalog.sample.json")
-PREPARED_ILLUSTRATIVE_CLIPS_PATH: Path = PROJECT_ROOT / "public" / "prepared_illustrative_clips.json"
 
 
 def output_dir() -> Path:
