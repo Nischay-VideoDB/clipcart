@@ -27,7 +27,11 @@ sys.path.insert(0, str(ROOT))
 load_dotenv(ROOT / ".env")
 
 from clipcart import config  # noqa: E402
-from clipcart.prepared_demo import PREPARED_ILLUSTRATIVE_CLIPS  # noqa: E402
+from clipcart.prepared_demo import (  # noqa: E402
+    PREPARED_ILLUSTRATIVE_CLIPS,
+    prepared_run,
+    prepared_runs,
+)
 from clipcart.pipeline import run as run_pipeline  # noqa: E402
 
 app = Flask(__name__, static_folder=str(ROOT / "web"))
@@ -57,16 +61,30 @@ def _prepared_illustrative_clips() -> str:
     return json.dumps(PREPARED_ILLUSTRATIVE_CLIPS)
 
 
+def _prepared_run_response(run_id: str | None):
+    try:
+        return prepared_run(run_id)
+    except KeyError:
+        return None
+
+
 @app.route("/")
 def index():
-    """Serve the main UI."""
-    return send_from_directory(str(ROOT / "web"), "index.html")
+    """Serve prepared examples publicly and the live workflow locally."""
+    page = "results.html" if config.public_showcase() else "index.html"
+    return send_from_directory(str(ROOT / "web"), page)
 
 
 @app.route("/api/showcase")
 def showcase_index():
-    """Serve the full landing page through the Vercel function."""
-    return index()
+    """Make the prepared examples the public Vercel entrypoint."""
+    return send_from_directory(str(ROOT / "web"), "results.html")
+
+
+@app.route("/assets/<path:filename>")
+def prepared_assets(filename: str):
+    """Serve prepared product art locally; Vercel serves public/assets directly."""
+    return send_from_directory(str(ROOT / "public" / "assets"), filename)
 
 
 @app.route("/api/showcase/results")
@@ -91,11 +109,20 @@ def output_files(filename: str):
 def get_clips():
     """Return the current clips.json or an empty list."""
     if config.public_showcase():
-        return _prepared_illustrative_clips(), 200, {"Content-Type": "application/json"}
+        selected_run = _prepared_run_response(request.args.get("run"))
+        if selected_run is None:
+            return jsonify({"error": "Unknown prepared example."}), 404
+        return jsonify(selected_run["clips"])
     clips_path = config.clips_output_path()
     if clips_path.exists():
         return clips_path.read_text(encoding="utf-8"), 200, {"Content-Type": "application/json"}
     return jsonify([])
+
+
+@app.route("/api/prepared-runs")
+def get_prepared_runs():
+    """Expose only static, transparent examples for the public showcase selector."""
+    return jsonify(prepared_runs())
 
 
 @app.route("/api/status")
@@ -107,6 +134,7 @@ def get_status():
             "message": "Prepared illustrative demo - not a live VideoDB/provider run.",
             "progress": 100,
             "mode": "showcase",
+            "prepared_run_count": len(prepared_runs()),
         })
     with _lock:
         return jsonify(dict(_state))

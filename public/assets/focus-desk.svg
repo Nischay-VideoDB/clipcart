@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Illustrative focus desk product card</title><desc id="desc">A stylized task lamp and desk accessories.</desc>
+  <rect width="640" height="360" fill="#e0e5ef"/><rect y="244" width="640" height="116" fill="#5d6576"/><rect x="165" y="160" width="222" height="78" rx="10" fill="#2d3547"/><rect x="190" y="178" width="172" height="43" rx="5" fill="#8db6d9"/>
+  <path d="M455 238V135q0-52 52-52" fill="none" stroke="#252c3b" stroke-width="15"/><path d="M507 76h47l-18 39h-47z" fill="#f4c76e"/><circle cx="330" cy="198" r="11" fill="#f4efe8"/>
+  <text x="38" y="57" fill="#252c3b" font-family="Arial,sans-serif" font-size="25" font-weight="700">PREPARED PRODUCT CARD</text>
+  <text x="38" y="88" fill="#465167" font-family="Arial,sans-serif" font-size="18">Workspace accessories • illustrative</text>
+</svg>

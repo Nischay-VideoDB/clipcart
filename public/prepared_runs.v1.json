@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "mode": "prepared-illustrative",
+  "updated_at": "2026-08-18",
+  "runs": [
+    {
+      "id": "home-tabletop-v1",
+      "title": "Home tabletop edit",
+      "category": "Home and kitchen",
+      "summary": "Three timed product moments for a calm tabletop product story.",
+      "provenance": "Prepared illustrative catalog records paired with a public CC0 media test asset. Product matches, timestamps, and copy are deterministic examples - not live analysis or evidence of products in the video.",
+      "source_media": {
+        "title": "MDN flower video",
+        "url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+        "license_note": "Public CC0 media test asset used only for playback preview."
+      },
+      "clips": [
+        {
+          "name": "Solstice Ceramic Pour-Over Set",
+          "price": "USD 48.00",
+          "buy_url": "https://example.com/",
+          "image_url": "/assets/home-tabletop.svg",
+          "hook": "A warm tabletop moment for a slow-morning coffee ritual.",
+          "caption": "Pour, pause, and make the everyday cup feel considered. Prepared illustrative copy.",
+          "hashtags": ["preparedDemo", "homeCoffee", "tabletop"],
+          "start": 6.0,
+          "end": 18.0,
+          "stream_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4#t=6,18",
+          "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
+        },
+        {
+          "name": "Hearth Linen Napkin Pair",
+          "price": "USD 22.00",
+          "buy_url": "https://example.com/",
+          "image_url": "/assets/home-tabletop.svg",
+          "hook": "A simple texture cue for an elevated table setting.",
+          "caption": "Soft texture, relaxed folds, and an easy table reset. Prepared illustrative copy.",
+          "hashtags": ["preparedDemo", "linen", "homeEdit"],
+          "start": 21.0,
+          "end": 33.0,
+          "stream_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4#t=21,33",
+          "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
+        },
+        {
+          "name": "Morningside Glass Carafe",
+          "price": "USD 34.00",
+          "buy_url": "https://example.com/",
+          "image_url": "/assets/home-tabletop.svg",
+          "hook": "A clear glass detail for a quiet hosting story.",
+          "caption": "A bright, practical piece for water, cold brew, or flowers. Prepared illustrative copy.",
+          "hashtags": ["preparedDemo", "glassware", "hosting"],
+          "start": 36.0,
+          "end": 49.0,
+          "stream_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4#t=36,49",
+          "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
+        }
+      ]
+    },
+    {
+      "id": "trail-essentials-v1",
+      "title": "Trail essentials cutdown",
+      "category": "Outdoor gear",
+      "summary": "Three short product moments for an active, utility-led campaign concept.",
+      "provenance": "Prepared illustrative catalog records paired with a public W3C media test asset. Product matches, timestamps, and copy are deterministic examples - not live analysis or evidence of products in the video.",
+      "source_media": {
+        "title": "Sintel trailer - Blender Foundation",
+        "url": "https://media.w3.org/2010/05/sintel/trailer.mp4",
+        "license_note": "Sintel trailer © Blender Foundation | durian.blender.org, licensed CC BY 3.0 and mirrored by W3C; used only as a source preview."
+      },
+      "clips": [
+        {
+          "name": "Trailbase 18L Daypack",
+          "price": "USD 72.00",
+          "buy_url": "https://example.com/",
+          "image_url": "/assets/trail-essentials.svg",
+          "hook": "Pack light for the route ahead.",
+          "caption": "A compact carry built for the essentials and the unexpected. Prepared illustrative copy.",
+          "hashtags": ["preparedDemo", "trailGear", "daypack"],
+          "start": 8.0,
+          "end": 22.0,
+          "stream_url": "https://media.w3.org/2010/05/sintel/trailer.mp4#t=8,22",
+          "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
+        },
+        {
+          "name": "Arbor Insulated Bottle",
+          "price": "USD 29.00",
+          "buy_url": "https://example.com/",
+          "image_url": "/assets/trail-essentials.svg",
+          "hook": "A hydration beat for every mile.",
+          "caption": "Cold water, durable finish, and one less thing to think about. Prepared illustrative copy.",
+          "hashtags": ["preparedDemo", "outdoors", "hydration"],
+          "start": 31.0,
+          "end": 45.0,
+          "stream_url": "https://media.w3.org/2010/05/sintel/trailer.mp4#t=31,45",
+          "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
+        },
+        {
+          "name": "Ridge Compact Lantern",
+          "price": "USD 39.00",
+          "buy_url": "https://example.com/",
+          "image_url": "/assets/trail-essentials.svg",
+          "hook": "Bring a reliable pool of light to camp.",
+          "caption": "A small lantern with a big role after sunset. Prepared illustrative copy.",
+          "hashtags": ["preparedDemo", "camping", "lantern"],
+          "start": 54.0,
+          "end": 68.0,
+          "stream_url": "https://media.w3.org/2010/05/sintel/trailer.mp4#t=54,68",
+          "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
+        }
+      ]
+    },
+    {
+      "id": "focus-desk-v1",
+      "title": "Focus desk collection",
+      "category": "Workspace accessories",
+      "summary": "Three visual beats for a focused-workspace product collection.",
+      "provenance": "Prepared illustrative catalog records paired with a public W3C media test asset. Product matches, timestamps, and copy are deterministic examples - not live analysis or evidence of products in the video.",
+      "source_media": {
+        "title": "Big Buck Bunny trailer - Blender Foundation",
+        "url": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+        "license_note": "Big Buck Bunny trailer © 2008 Blender Foundation | bigbuckbunny.org, licensed CC BY 3.0 and mirrored by W3C; used only as a source preview."
+      },
+      "clips": [
+        {
+          "name": "Halo Adjustable Task Lamp",
+          "price": "USD 86.00",
+          "buy_url": "https://example.com/",
+          "image_url": "/assets/focus-desk.svg",
+          "hook": "Give the desk a calmer, more focused glow.",
+          "caption": "An adjustable light cue for late notes and early starts. Prepared illustrative copy.",
+          "hashtags": ["preparedDemo", "deskSetup", "taskLight"],
+          "start": 11.0,
+          "end": 25.0,
+          "stream_url": "https://media.w3.org/2010/05/bunny/trailer.mp4#t=11,25",
+          "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
+        },
+        {
+          "name": "FocusGrid Desk Mat",
+          "price": "USD 31.00",
+          "buy_url": "https://example.com/",
+          "image_url": "/assets/focus-desk.svg",
+          "hook": "A clean visual reset for the work surface.",
+          "caption": "One grounded layer for keyboard, notebook, and daily tools. Prepared illustrative copy.",
+          "hashtags": ["preparedDemo", "workspace", "deskMat"],
+          "start": 39.0,
+          "end": 53.0,
+          "stream_url": "https://media.w3.org/2010/05/bunny/trailer.mp4#t=39,53",
+          "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
+        },
+        {
+          "name": "Linework Cable Tray",
+          "price": "USD 26.00",
+          "buy_url": "https://example.com/",
+          "image_url": "/assets/focus-desk.svg",
+          "hook": "Close on an organized desk, not a tangle.",
+          "caption": "A simple hidden-helper moment for an uncluttered setup. Prepared illustrative copy.",
+          "hashtags": ["preparedDemo", "cableManagement", "workFromHome"],
+          "start": 66.0,
+          "end": 80.0,
+          "stream_url": "https://media.w3.org/2010/05/bunny/trailer.mp4#t=66,80",
+          "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
+        }
+      ]
+    }
+  ]
+}

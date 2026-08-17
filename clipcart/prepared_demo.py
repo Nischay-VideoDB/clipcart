@@ -1,28 +1,38 @@
-"""Deterministic, fixture-backed records for the public illustrative showcase."""
+"""Versioned, fixture-backed records for ClipCart's public prepared showcase."""
 
-PREPARED_ILLUSTRATIVE_CLIPS = [
-    {
-        "name": "Floral Wrap Dress",
-        "price": "SGD 29.90",
-        "buy_url": "https://example.com/products/floral-wrap-dress",
-        "image_url": "",
-        "hook": "A fixture-backed dress match, ready for a shoppable cut review.",
-        "caption": "Prepared illustrative caption for the Floral Wrap Dress. No provider generated this copy.",
-        "hashtags": ["preparedDemo", "floralWrapDress", "shoppableClip"],
-        "start": 14.0,
-        "end": 32.0,
-        "stream_url": "",
-    },
-    {
-        "name": "Canvas Tote Bag",
-        "price": "SGD 18.90",
-        "buy_url": "https://example.com/products/canvas-tote-bag",
-        "image_url": "",
-        "hook": "A fixture-backed tote match with a deterministic trim window.",
-        "caption": "Prepared illustrative caption for the Canvas Tote Bag. No provider generated this copy.",
-        "hashtags": ["preparedDemo", "canvasToteBag", "shoppableClip"],
-        "start": 48.0,
-        "end": 70.0,
-        "stream_url": "",
-    },
-]
+from __future__ import annotations
+
+import copy
+import json
+from pathlib import Path
+
+_FIXTURE_PATH = Path(__file__).resolve().parents[1] / "public" / "prepared_runs.v1.json"
+
+
+def _load_prepared_runs() -> tuple[dict, ...]:
+    payload = json.loads(_FIXTURE_PATH.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != 1 or payload.get("mode") != "prepared-illustrative":
+        raise RuntimeError("Prepared ClipCart fixture has an unsupported schema.")
+    runs = payload.get("runs")
+    if not isinstance(runs, list) or len(runs) < 3:
+        raise RuntimeError("Prepared ClipCart fixture must include three curated runs.")
+    return tuple(runs)
+
+
+PREPARED_RUNS = _load_prepared_runs()
+# Compatibility export for local callers that still expect one illustrative result set.
+PREPARED_ILLUSTRATIVE_CLIPS = copy.deepcopy(PREPARED_RUNS[0]["clips"])
+
+
+def prepared_runs() -> list[dict]:
+    """Return all immutable prepared run records without sharing mutable state."""
+    return copy.deepcopy(list(PREPARED_RUNS))
+
+
+def prepared_run(run_id: str | None) -> dict:
+    """Return a selected prepared run, defaulting to the first curated example."""
+    selected = run_id or PREPARED_RUNS[0]["id"]
+    for run in PREPARED_RUNS:
+        if run["id"] == selected:
+            return copy.deepcopy(run)
+    raise KeyError(selected)

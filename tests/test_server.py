@@ -43,22 +43,29 @@ def test_web_runner_requires_explicit_operator_gate(monkeypatch):
     assert "disabled" in response.get_json()["error"]
 
 
-def test_public_showcase_serves_fixture_backed_result_and_full_pages(monkeypatch):
+def test_public_showcase_serves_three_fixture_backed_runs_and_full_pages(monkeypatch):
     monkeypatch.setenv("VERCEL", "1")
     client = server.app.test_client()
 
     status = client.get("/api/status")
-    clips = client.get("/api/clips")
+    runs = client.get("/api/prepared-runs")
+    clips = client.get("/api/clips?run=trail-essentials-v1")
 
     assert status.get_json() == {
         "message": "Prepared illustrative demo - not a live VideoDB/provider run.",
         "mode": "showcase",
+        "prepared_run_count": 3,
         "progress": 100,
         "status": "done",
     }
-    assert clips.get_json() == server.PREPARED_ILLUSTRATIVE_CLIPS
-    assert b"Explore prepared run" in client.get("/api/showcase").data
-    assert b"Prepared illustrative demo - not a live VideoDB/provider run." in client.get("/api/showcase/results").data
+    assert len(runs.get_json()) == 3
+    assert clips.get_json() == server.prepared_run("trail-essentials-v1")["clips"]
+    assert client.get("/api/clips?run=unknown").status_code == 404
+    assert b"Prepared examples" in client.get("/").data
+    assert b"Prepared examples" in client.get("/api/showcase").data
+    assert b"Prepared examples" in client.get("/api/showcase/results").data
+    for asset in ("home-tabletop.svg", "trail-essentials.svg", "focus-desk.svg"):
+        assert client.get(f"/assets/{asset}").status_code == 200
 
 
 def test_public_showcase_run_is_disabled_before_any_source_validation(monkeypatch):

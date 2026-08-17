@@ -5,7 +5,11 @@ from pathlib import Path
 import pytest
 
 from clipcart import config
-from clipcart.prepared_demo import PREPARED_ILLUSTRATIVE_CLIPS
+from clipcart.prepared_demo import (
+    PREPARED_ILLUSTRATIVE_CLIPS,
+    PREPARED_RUNS,
+    prepared_run,
+)
 
 
 def test_validate_web_video_source_accepts_public_https(monkeypatch):
@@ -32,17 +36,24 @@ def test_vercel_never_enables_processing(monkeypatch):
     assert config.public_showcase() is True
 
 
-def test_prepared_illustrative_records_match_the_tracked_catalog_fixture():
-    catalog = json.loads(Path(config.SAMPLE_CATALOG_PATH).read_text())
-    clips = PREPARED_ILLUSTRATIVE_CLIPS
-    public_clips = json.loads((config.PROJECT_ROOT / "public" / "prepared_illustrative_clips.json").read_text())
+def test_versioned_prepared_runs_are_complete_illustrative_and_playable():
+    fixture = json.loads((config.PROJECT_ROOT / "public" / "prepared_runs.v1.json").read_text())
 
-    assert [clip["name"] for clip in clips] == [product["name"] for product in catalog]
-    assert [clip["price"] for clip in clips] == [product["price"] for product in catalog]
-    assert [clip["buy_url"] for clip in clips] == [product["buy_url"] for product in catalog]
-    assert all(clip["end"] > clip["start"] and not clip["stream_url"] for clip in clips)
-    assert all("No provider generated" in clip["caption"] for clip in clips)
-    assert public_clips == clips
+    assert fixture["schema_version"] == 1
+    assert fixture["mode"] == "prepared-illustrative"
+    assert len(PREPARED_RUNS) == 3
+    assert len({run["category"] for run in PREPARED_RUNS}) == 3
+    assert prepared_run(None)["id"] == PREPARED_RUNS[0]["id"]
+    assert PREPARED_ILLUSTRATIVE_CLIPS == PREPARED_RUNS[0]["clips"]
+    for run in PREPARED_RUNS:
+        assert 2 <= len(run["clips"]) <= 6
+        assert "not live analysis" in run["provenance"]
+        assert run["source_media"]["url"].startswith("https://")
+        for clip in run["clips"]:
+            assert clip["end"] > clip["start"]
+            assert clip["stream_url"].startswith("https://")
+            assert clip["image_url"].startswith("/assets/")
+            assert "illustrative" in clip["playback_note"].lower()
 
 
 def test_vercel_routes_the_full_prepared_pages_through_the_function():

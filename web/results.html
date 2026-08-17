@@ -86,6 +86,17 @@
   /* ── RESULTS CONTENT ─────────────────────────────────── */
   .results-wrap { max-width: 1100px; margin: 0 auto 60px; padding: 0 60px; display: none; }
   .results-wrap.visible { display: block; }
+  .prepared-run-picker { max-width: 1100px; margin: 0 auto 22px; padding: 0 60px; }
+  .prepared-run-picker[hidden] { display: none; }
+  .prepared-run-heading { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 10px; }
+  .prepared-run-heading h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .08em; }
+  .prepared-run-heading p { max-width: 620px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+  .prepared-run-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .prepared-run-card { width: 100%; border: 1px solid var(--border); background: var(--white); color: var(--dark); text-align: left; border-radius: 12px; padding: 14px; cursor: pointer; }
+  .prepared-run-card:hover, .prepared-run-card[aria-pressed="true"] { border-color: var(--orange); background: var(--orange-lt); }
+  .prepared-run-card strong, .prepared-run-card span { display: block; }
+  .prepared-run-card strong { font-size: 13px; margin-bottom: 4px; }
+  .prepared-run-card span { color: var(--muted); font-size: 11px; line-height: 1.4; }
 
   /* ── APP WIDGET ──────────────────────────────────────── */
   .app-widget {
@@ -120,6 +131,7 @@
   .sidebar-item {
     display: flex; flex-direction: column; align-items: center; gap: 3px;
     padding: 8px 6px; border-radius: 8px; cursor: pointer; width: 52px;
+    border: 0; background: transparent; font-family: inherit;
     font-size: 10px; color: var(--muted); font-weight: 500; transition: background .15s;
   }
   .sidebar-item svg { width: 18px; height: 18px; }
@@ -153,7 +165,7 @@
   }
   .tl-label { font-size: 9px; color: rgba(255,255,255,.35); white-space: nowrap; letter-spacing: .3px; }
   .timeline-track { flex: 1; height: 5px; background: rgba(255,255,255,.12); border-radius: 3px; position: relative; }
-  .timeline-clip { position: absolute; top: 0; height: 100%; background: var(--orange); border-radius: 3px; opacity: .7; cursor: pointer; transition: opacity .15s; }
+  .timeline-clip { position: absolute; top: 0; height: 100%; border: 0; background: var(--orange); border-radius: 3px; opacity: .7; cursor: pointer; transition: opacity .15s; }
   .timeline-clip:hover { opacity: 1; }
   .timeline-clip.active { opacity: 1; box-shadow: 0 0 0 2px #fff; }
   .tl-playhead { position: absolute; top: -4px; width: 2px; height: 13px; background: #fff; border-radius: 1px; pointer-events: none; transition: left .25s linear; }
@@ -180,7 +192,7 @@
   .tab-panel { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
   .tab-panel.active { display: flex; }
   .clip-list { padding: 8px; display: flex; flex-direction: column; gap: 6px; width: 100%; }
-  .clip-card { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; cursor: pointer; border: 1.5px solid transparent; transition: all .15s; background: var(--white); }
+  .clip-card { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; font-family: inherit; padding: 8px; border-radius: 8px; cursor: pointer; border: 1.5px solid transparent; transition: all .15s; background: var(--white); }
   .clip-card:hover { border-color: var(--orange); background: var(--orange-lt); }
   .clip-card.active { border-color: var(--orange); background: var(--orange-lt); }
   .clip-thumb { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: var(--border); }
@@ -206,7 +218,7 @@
 
   .shopee-row { padding: 10px 14px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 600; flex-shrink: 0; }
   .shopee-icon { width: 18px; height: 18px; }
-  .toggle-track { width: 30px; height: 17px; background: var(--border); border-radius: 9px; margin-left: auto; position: relative; cursor: pointer; transition: background .2s; }
+  .toggle-track { width: 30px; height: 17px; border: 0; padding: 0; background: var(--border); border-radius: 9px; margin-left: auto; position: relative; cursor: pointer; transition: background .2s; }
   .toggle-track.on { background: var(--orange); }
   .toggle-thumb { width: 13px; height: 13px; background: #fff; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: left .2s; }
   .toggle-track.on .toggle-thumb { left: 15px; }
@@ -238,6 +250,9 @@
     .header-stats { width: 100%; justify-content: space-between; gap: 12px; }
     .hstat { flex: 1 1 0; }
     .processing-wrap, .results-wrap { padding-inline: 20px; }
+    .prepared-run-picker { padding-inline: 20px; }
+    .prepared-run-list { grid-template-columns: 1fr; }
+    .prepared-run-heading { align-items: flex-start; flex-direction: column; }
     #prepared-demo-note { padding-inline: 20px !important; }
     .widget-header { flex-wrap: wrap; gap: 8px; }
     .widget-header .filename { flex-basis: 100%; order: 4; }
@@ -256,6 +271,7 @@
     .page-header { padding-inline: 16px; }
     .page-title { font-size: 28px; }
     .processing-wrap, .results-wrap { padding-inline: 16px; }
+    .prepared-run-picker { padding-inline: 16px; }
     #prepared-demo-note { padding-inline: 16px !important; }
     .widget-header { padding-inline: 12px; }
     .widget-video { min-height: 220px; }
@@ -292,11 +308,19 @@
   </div>
   <div class="header-stats" id="header-stats" style="display:none">
     <div class="hstat"><div class="hstat-num" id="hstat-clips">0</div><div class="hstat-label">Clips</div></div>
-    <div class="hstat"><div class="hstat-num">90%</div><div class="hstat-label">Time Saved</div></div>
+    <div class="hstat"><div class="hstat-num" id="hstat-mode">Ready</div><div class="hstat-label">Review state</div></div>
     <div class="hstat"><div class="hstat-num" id="hstat-products">0</div><div class="hstat-label">Products</div></div>
   </div>
 </div>
-<p id="prepared-demo-note" hidden style="max-width:1100px;margin:0 auto 20px;padding:0 60px;color:var(--muted);font-size:13px">Prepared illustrative demo - not a live VideoDB/provider run. Product matches, timing, captions, and copy are deterministic fixture examples; no playback or export stream is included.</p>
+<p id="prepared-demo-note" hidden style="max-width:1100px;margin:0 auto 20px;padding:0 60px;color:var(--muted);font-size:13px">Prepared illustrative examples - not a live VideoDB or provider run. Product matches, timing, and copy are deterministic fixture data; each player is a labelled public source-preview fragment, not an exported commerce clip.</p>
+
+<section class="prepared-run-picker" id="prepared-run-picker" hidden aria-labelledby="prepared-run-title">
+  <div class="prepared-run-heading">
+    <h2 id="prepared-run-title">Prepared examples</h2>
+    <p>Switch between completed, deterministic product-story examples instantly. Catalog records are illustrative and each source preview is identified in the selected run.</p>
+  </div>
+  <div class="prepared-run-list" id="prepared-run-list" role="group" aria-label="Prepared commerce examples"></div>
+</section>
 
 <!-- PROCESSING STATE -->
 <div class="processing-wrap" id="processing-wrap">
@@ -331,7 +355,7 @@
   <!-- App Widget -->
   <div class="app-widget">
     <div class="widget-header">
-      <span class="label">Live Video</span>
+      <span class="label" id="widget-source-label">Live Video</span>
       <span class="filename" id="widget-filename">—</span>
       <div class="badge-status done" id="widget-badge">
         <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7l2 2 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -343,26 +367,26 @@
     <div class="widget-body">
       <!-- Sidebar -->
       <div class="widget-sidebar">
-        <div class="sidebar-item active" data-tab="clips" onclick="switchTab('clips')" title="Clips">
+        <button type="button" class="sidebar-item active" data-tab="clips" onclick="switchTab('clips')" title="Clips" aria-pressed="true">
           <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="4" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 4V2M12 4V2M6 16v-2M12 16v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           Clips
-        </div>
-        <div class="sidebar-item" data-tab="trim" onclick="switchTab('trim')" title="Trim">
+        </button>
+        <button type="button" class="sidebar-item" data-tab="trim" onclick="switchTab('trim')" title="Trim" aria-pressed="false">
           <svg viewBox="0 0 18 18" fill="none"><path d="M2 9h14M9 2v14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           Trim
-        </div>
-        <div class="sidebar-item" data-tab="captions" onclick="switchTab('captions')" title="Captions">
+        </button>
+        <button type="button" class="sidebar-item" data-tab="captions" onclick="switchTab('captions')" title="Captions" aria-pressed="false">
           <svg viewBox="0 0 18 18" fill="none"><rect x="2" y="5" width="14" height="8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 9h2M8 9h5M5 11.5h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
           Captions
-        </div>
-        <div class="sidebar-item" data-tab="price" onclick="switchTab('price')" title="Price">
+        </button>
+        <button type="button" class="sidebar-item" data-tab="price" onclick="switchTab('price')" title="Price" aria-pressed="false">
           <svg viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M9 5v8M6.5 7.5h3a1.5 1.5 0 010 3h-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
           Price
-        </div>
-        <div class="sidebar-item" data-tab="export" onclick="switchTab('export')" title="Export">
+        </button>
+        <button type="button" class="sidebar-item" data-tab="export" onclick="switchTab('export')" title="Export" aria-pressed="false">
           <svg viewBox="0 0 18 18" fill="none"><path d="M9 2v10M5 8l4 4 4-4M3 14h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Export
-        </div>
+        </button>
       </div>
 
       <!-- Video -->
@@ -407,7 +431,7 @@
       <div class="widget-clips">
         <div class="clips-panel-header">
           <svg viewBox="0 0 13 13" fill="none"><path d="M6.5 1l1.2 2.8L11 4.3 8.7 6.5l.6 2.9-2.8-1.5-2.8 1.5.6-2.9L2 4.3l3.3-.5L6.5 1z" fill="currentColor"/></svg>
-          <span id="panel-title">AI Generated Clips</span>
+          <span id="panel-title">Product clips</span>
         </div>
 
         <div id="tab-clips" class="tab-panel active">
@@ -426,10 +450,10 @@
           <div class="info-panel" id="export-panel"></div>
         </div>
 
-        <div class="shopee-row">
+        <div class="shopee-row" id="shopee-row">
           <img class="shopee-icon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/512px-Shopee.svg.png" alt="Shopee">
           Link to Shopee
-          <div class="toggle-track" id="shopee-toggle" onclick="toggleShopee()"><div class="toggle-thumb"></div></div>
+          <button type="button" class="toggle-track" id="shopee-toggle" onclick="toggleShopee()" aria-label="Link selected product to Shopee" aria-pressed="false"><span class="toggle-thumb"></span></button>
         </div>
       </div>
     </div>
@@ -447,9 +471,14 @@
   let activeTab = 'clips';
   let pollTimer = null;
   let shopeeLinked = false;
+  let preparedRuns = [];
+  let activePreparedRun = null;
+  let isPreparedShowcase = false;
+  let videoEventsWired = false;
   const VIDEO_DURATION_EST = 360;
 
-  const TAB_TITLES = { clips: 'AI Generated Clips', trim: 'Trim Window', captions: 'AI Captions', price: 'Price & Link', export: 'Export Clip' };
+  const LIVE_TAB_TITLES = { clips: 'AI Generated Clips', trim: 'Trim Window', captions: 'AI Captions', price: 'Price & Link', export: 'Export Clip' };
+  const PREPARED_TAB_TITLES = { clips: 'Prepared Product Moments', trim: 'Prepared Trim Window', captions: 'Prepared Copy', price: 'Illustrative Price', export: 'Source Preview' };
 
   // ── utils ──────────────────────────────────────────────
   function fmt(sec) {
@@ -508,24 +537,75 @@
   }
 
   // ── show results ───────────────────────────────────────
-  async function showResults() {
-    const clipsResp = await fetch('/api/clips');
+  async function loadPreparedRuns() {
+    const response = await fetch('/api/prepared-runs');
+    const payload = await response.json();
+    preparedRuns = Array.isArray(payload) ? payload.filter(run => run && typeof run === 'object') : [];
+    if (!preparedRuns.length) throw new Error('Prepared examples are unavailable.');
+    if (!activePreparedRun || !preparedRuns.some(run => run.id === activePreparedRun.id)) {
+      activePreparedRun = preparedRuns[0];
+    }
+    document.getElementById('prepared-run-picker').hidden = false;
+    renderPreparedRunPicker();
+  }
+
+  function renderPreparedRunPicker() {
+    const list = document.getElementById('prepared-run-list');
+    list.replaceChildren();
+    preparedRuns.forEach(run => {
+      const button = makeElement('button', 'prepared-run-card');
+      button.type = 'button';
+      button.setAttribute('aria-pressed', String(activePreparedRun && run.id === activePreparedRun.id));
+      button.append(makeElement('strong', '', text(run.title)), makeElement('span', '', `${text(run.category)} · ${Array.isArray(run.clips) ? run.clips.length : 0} prepared moments`));
+      button.addEventListener('click', async () => {
+        activePreparedRun = run;
+        renderPreparedRunPicker();
+        await showResults(run.id);
+      });
+      list.appendChild(button);
+    });
+  }
+
+  async function showResults(runId = null) {
+    const selectedId = runId || (isPreparedShowcase && activePreparedRun ? activePreparedRun.id : '');
+    const clipsResp = await fetch(`/api/clips${selectedId ? `?run=${encodeURIComponent(selectedId)}` : ''}`);
+    if (!clipsResp.ok) throw new Error('Results are unavailable.');
     const payload = await clipsResp.json();
     clips = (Array.isArray(payload) ? payload : []).map(normalizeClip);
 
     document.getElementById('processing-wrap').style.display = 'none';
     document.getElementById('results-wrap').classList.add('visible');
-    document.getElementById('page-subtitle').textContent = `${clips.length} clip${clips.length !== 1 ? 's' : ''} ready to share`;
+    const subtitle = document.getElementById('page-subtitle');
+    if (isPreparedShowcase && activePreparedRun) {
+      subtitle.textContent = `${text(activePreparedRun.summary)} ${clips.length} prepared moments ready to inspect.`;
+      document.getElementById('prepared-demo-note').textContent = `${text(activePreparedRun.provenance)} ${text(activePreparedRun.source_media?.license_note)}`;
+      document.getElementById('widget-source-label').textContent = 'Prepared source preview';
+      document.getElementById('hstat-mode').textContent = 'Prepared';
+      document.getElementById('shopee-row').hidden = true;
+      document.querySelectorAll('.nav-back, .btn-ghost, .btn-newrun').forEach((link) => {
+        link.href = 'https://github.com/Nischay-VideoDB/clipcart#readme';
+        link.textContent = 'Live workflow guide';
+        link.target = '_blank';
+        link.rel = 'noreferrer';
+      });
+    } else {
+      subtitle.textContent = `${clips.length} clip${clips.length !== 1 ? 's' : ''} ready to share`;
+      document.getElementById('widget-source-label').textContent = 'Live Video';
+    }
     const title = document.getElementById('page-title');
-    title.replaceChildren(document.createTextNode('YOUR '), makeElement('span', '', 'SHOPPABLE CLIPS'));
+    title.replaceChildren(document.createTextNode(isPreparedShowcase ? 'PREPARED ' : 'YOUR '), makeElement('span', '', isPreparedShowcase ? 'EXAMPLES' : 'SHOPPABLE CLIPS'));
 
     document.getElementById('header-stats').style.display = 'flex';
     document.getElementById('hstat-clips').textContent = clips.length;
     document.getElementById('hstat-products').textContent = clips.length;
 
-    wireVideoEvents();
+    if (!videoEventsWired) {
+      wireVideoEvents();
+      videoEventsWired = true;
+    }
     renderClips();
     renderDetailCards();
+    switchTab(activeTab);
   }
 
   function text(value) {
@@ -622,19 +702,24 @@
     clips.forEach((clip, i) => {
       const left = (clip.start / totalDur * 100).toFixed(1);
       const width = Math.max((clip.end - clip.start) / totalDur * 100, 2).toFixed(1);
-      const marker = document.createElement('div');
+      const marker = document.createElement('button');
+      marker.type = 'button';
       marker.className = 'timeline-clip';
       marker.style.left = left + '%';
       marker.style.width = width + '%';
       marker.title = clip.name;
+      marker.setAttribute('aria-label', `Play prepared moment: ${clip.name}`);
+      marker.setAttribute('aria-pressed', 'false');
       marker.addEventListener('click', () => playClip(i));
       track.appendChild(marker);
     });
 
     list.replaceChildren();
     clips.forEach((clip, i) => {
-      const card = document.createElement('div');
+      const card = document.createElement('button');
+      card.type = 'button';
       card.className = 'clip-card';
+      card.setAttribute('aria-pressed', 'false');
       const info = makeElement('div', 'clip-info');
       info.append(makeElement('div', 'clip-name', clip.name), makeElement('div', 'clip-time', `${fmt(clip.start)} – ${fmt(clip.end)}`));
       card.append(imageElement('clip-thumb', clip.image_url, ''), info, makeElement('div', 'clip-check', '✓'));
@@ -659,8 +744,8 @@
       const tags = makeElement('div', 'cdc-tags');
       clip.hashtags.forEach((tag) => tags.append(makeElement('span', 'cdc-tag', `#${tag}`)));
       const footer = makeElement('div', 'cdc-footer');
-      const buy = makeElement('a', 'cdc-buy', 'Buy Now');
-      setSafeLink(buy, clip.buy_url);
+      const buy = makeElement('a', 'cdc-buy', isPreparedShowcase ? 'Illustrative product' : 'Buy Now');
+      setSafeLink(buy, isPreparedShowcase ? '' : clip.buy_url);
       footer.append(makeElement('span', 'cdc-price', clip.price), buy);
       body.append(makeElement('div', 'cdc-name', clip.name), makeElement('div', 'cdc-hook', clip.hook), makeElement('div', 'cdc-caption', clip.caption), tags, footer);
       card.append(imageElement('cdc-thumb', clip.image_url, clip.name), body);
@@ -682,13 +767,18 @@
     video.muted = false;
     video.volume = parseFloat(document.getElementById('ctrl-volume').value);
 
-    if (clip.stream_url && Hls.isSupported()) {
+    const isHls = clip.stream_url.includes('.m3u8');
+    if (clip.stream_url && isHls && Hls.isSupported()) {
       hlsPlayer = new Hls();
       hlsPlayer.loadSource(clip.stream_url);
       hlsPlayer.attachMedia(video);
       hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => setPlayIcon(false));
-    } else if (clip.stream_url && video.canPlayType('application/vnd.apple.mpegurl')) {
+    } else if (clip.stream_url && isHls && video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = clip.stream_url;
+      video.load();
+    } else if (clip.stream_url) {
+      video.src = clip.stream_url;
+      video.load();
     } else {
       video.removeAttribute('src');
     }
@@ -696,14 +786,22 @@
     document.getElementById('price-overlay').style.display = 'flex';
     document.getElementById('overlay-price').textContent = clip.price;
     document.getElementById('overlay-name').textContent = clip.name;
-    setSafeLink(document.getElementById('overlay-buy'), clip.buy_url);
+    const overlayBuy = document.getElementById('overlay-buy');
+    overlayBuy.textContent = isPreparedShowcase ? 'Illustrative product' : 'Buy Now';
+    setSafeLink(overlayBuy, isPreparedShowcase ? '' : clip.buy_url);
 
     setCtrlTime(0, 0);
     document.getElementById('ctrl-scrubber').value = 0;
     setPlayIcon(false);
 
-    document.querySelectorAll('.clip-card').forEach((el, i) => el.classList.toggle('active', i === idx));
-    document.querySelectorAll('.timeline-clip').forEach((el, i) => el.classList.toggle('active', i === idx));
+    document.querySelectorAll('.clip-card').forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
+      el.setAttribute('aria-pressed', String(i === idx));
+    });
+    document.querySelectorAll('.timeline-clip').forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
+      el.setAttribute('aria-pressed', String(i === idx));
+    });
 
     renderInfoPanels(clip);
   }
@@ -769,9 +867,14 @@
   // ── sidebar tabs ───────────────────────────────────────
   function switchTab(tab) {
     activeTab = tab;
-    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.toggle('active', el.dataset.tab === tab));
+    document.querySelectorAll('.sidebar-item').forEach(el => {
+      const active = el.dataset.tab === tab;
+      el.classList.toggle('active', active);
+      el.setAttribute('aria-pressed', String(active));
+    });
     document.querySelectorAll('.tab-panel').forEach(el => el.classList.toggle('active', el.id === 'tab-' + tab));
-    document.getElementById('panel-title').textContent = TAB_TITLES[tab] || tab;
+    const titles = isPreparedShowcase ? PREPARED_TAB_TITLES : LIVE_TAB_TITLES;
+    document.getElementById('panel-title').textContent = titles[tab] || tab;
     if (activeIdx >= 0) renderInfoPanels(clips[activeIdx]);
   }
 
@@ -796,23 +899,23 @@
 
     const price = infoRow('Price', clip.price);
     price.querySelector('.info-value').style.cssText = 'font-size:22px;font-weight:700;color:var(--orange)';
-    const productLink = makeElement('a', 'info-btn', 'Open Product Page');
-    setSafeLink(productLink, clip.buy_url);
+    const productLink = makeElement('a', 'info-btn', isPreparedShowcase ? 'Illustrative product - no store link' : 'Open Product Page');
+    setSafeLink(productLink, isPreparedShowcase ? '' : clip.buy_url);
     const priceFeedback = feedback();
     priceFeedback.id = 'copy-url-fb';
     document.getElementById('price-panel').replaceChildren(
-      price, infoRow('Product URL', clip.buy_url || 'Unavailable', 'mono'), productLink,
-      copyButton('Copy URL', () => copyText(clip.buy_url, 'copy-url-fb')), priceFeedback,
+      price, infoRow('Product URL', isPreparedShowcase ? 'Illustrative fixture - no retail destination' : clip.buy_url || 'Unavailable', 'mono'), productLink,
+      ...(isPreparedShowcase ? [] : [copyButton('Copy URL', () => copyText(clip.buy_url, 'copy-url-fb')), priceFeedback]),
     );
 
-    const streamLink = makeElement('a', 'info-btn', 'Open in Browser');
+    const streamLink = makeElement('a', 'info-btn', isPreparedShowcase ? 'Open Source Preview' : 'Open in Browser');
     setSafeLink(streamLink, clip.stream_url);
     const streamFeedback = feedback();
     streamFeedback.id = 'copy-stream-fb';
     document.getElementById('export-panel').replaceChildren(
-      infoRow('HLS Stream URL', clip.stream_url || 'Unavailable', 'mono'), streamLink,
-      copyButton('Copy Stream URL', () => copyText(clip.stream_url, 'copy-stream-fb')), streamFeedback,
-      infoRow('VLC', 'Media → Open Network Stream → paste URL'),
+      infoRow(isPreparedShowcase ? 'Source preview URL' : 'HLS Stream URL', clip.stream_url || 'Unavailable', 'mono'), streamLink,
+      copyButton(isPreparedShowcase ? 'Copy Source URL' : 'Copy Stream URL', () => copyText(clip.stream_url, 'copy-stream-fb')), streamFeedback,
+      infoRow(isPreparedShowcase ? 'Playback note' : 'VLC', isPreparedShowcase ? 'Illustrative source-preview fragment - not a generated commerce clip.' : 'Media → Open Network Stream → paste URL'),
     );
   }
 
@@ -833,8 +936,11 @@
   }
 
   function toggleShopee() {
+    if (isPreparedShowcase) return;
     shopeeLinked = !shopeeLinked;
-    document.getElementById('shopee-toggle').classList.toggle('on', shopeeLinked);
+    const toggle = document.getElementById('shopee-toggle');
+    toggle.classList.toggle('on', shopeeLinked);
+    toggle.setAttribute('aria-pressed', String(shopeeLinked));
     if (shopeeLinked && activeIdx >= 0 && clips[activeIdx].buy_url) window.open(clips[activeIdx].buy_url, '_blank', 'noopener');
   }
 
@@ -842,7 +948,13 @@
   (async function init() {
     try {
       const status = await fetch('/api/status').then(r => r.json());
-      if (status.mode === 'showcase') document.getElementById('prepared-demo-note').hidden = false;
+      if (status.mode === 'showcase') {
+        isPreparedShowcase = true;
+        document.getElementById('prepared-demo-note').hidden = false;
+        await loadPreparedRuns();
+        await showResults(activePreparedRun.id);
+        return;
+      }
 
       if (status.status === 'done') {
         await showResults();

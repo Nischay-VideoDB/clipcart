@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Illustrative trail essentials product card</title><desc id="desc">A stylized daypack, bottle, and lantern against a mountain scene.</desc>
+  <rect width="640" height="360" fill="#d8e7dd"/><path d="M0 260 150 115l118 145 108-118 264 118z" fill="#466a55"/><path d="M0 290 185 180l142 110 140-86 173 86v70H0z" fill="#2f4c3e"/>
+  <rect x="269" y="122" width="90" height="130" rx="22" fill="#c46a31"/><path d="M283 122v-18h62v18" fill="none" stroke="#77401f" stroke-width="12"/><rect x="392" y="153" width="33" height="88" rx="12" fill="#f3dd8d"/><path d="M397 145h23" stroke="#704b22" stroke-width="10"/>
+  <text x="38" y="57" fill="#244033" font-family="Arial,sans-serif" font-size="25" font-weight="700">PREPARED PRODUCT CARD</text>
+  <text x="38" y="88" fill="#2f4c3e" font-family="Arial,sans-serif" font-size="18">Outdoor gear • illustrative</text>
+</svg>

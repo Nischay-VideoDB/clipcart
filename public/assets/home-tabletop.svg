@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">Illustrative home tabletop product card</title><desc id="desc">A stylized ceramic pour-over set on a warm tabletop.</desc>
+  <rect width="640" height="360" fill="#f7e6d3"/><rect y="245" width="640" height="115" fill="#b46c45"/>
+  <circle cx="320" cy="153" r="92" fill="#fffaf5"/><path d="M260 135h120l-22 78h-76z" fill="#d7784a"/><path d="M282 213h76v18h-76z" fill="#7c3f2d"/>
+  <path d="M305 92h30v43h-30z" fill="#f4efe8"/><circle cx="320" cy="106" r="9" fill="#542c22"/>
+  <text x="38" y="57" fill="#542c22" font-family="Arial,sans-serif" font-size="25" font-weight="700">PREPARED PRODUCT CARD</text>
+  <text x="38" y="88" fill="#7c3f2d" font-family="Arial,sans-serif" font-size="18">Home and kitchen • illustrative</text>
+</svg>
