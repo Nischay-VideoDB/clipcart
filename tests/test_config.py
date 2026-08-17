@@ -49,10 +49,32 @@ def test_vercel_routes_the_full_prepared_pages_through_the_function():
     route_config = json.loads((Path(__file__).resolve().parents[1] / "vercel.json").read_text())
 
     assert {route["source"]: route["destination"] for route in route_config["rewrites"]} == {
+        "/favicon.ico": "/favicon.svg",
         "/": "/api/index.py?path=showcase",
         "/results.html": "/api/index.py?path=showcase/results",
         "/api/:path*": "/api/index.py",
     }
+
+
+def test_public_pages_include_mobile_layout_guards_and_the_branded_favicon():
+    project_root = Path(__file__).resolve().parents[1]
+    favicon = project_root / "public" / "favicon.svg"
+
+    assert "ClipCart" in favicon.read_text()
+    for page in (project_root / "web" / "index.html", project_root / "web" / "results.html"):
+        source = page.read_text()
+
+        assert '<link rel="icon" href="/favicon.svg" type="image/svg+xml">' in source
+        assert "overflow-x: clip" in source
+        assert "@media (max-width: 600px)" in source
+        assert "@media (max-width: 390px)" in source
+
+    home_source = (project_root / "web" / "index.html").read_text()
+    results_source = (project_root / "web" / "results.html").read_text()
+    assert ".hero { flex-direction: column;" in home_source
+    assert ".stats-bar { display: grid;" in home_source
+    assert ".header-stats { width: 100%; justify-content: space-between;" in results_source
+    assert ".widget-body { height: auto; flex-direction: column;" in results_source
 
 
 @pytest.mark.parametrize("source", ["http://media.example/video.mp4", "https://localhost/video.mp4", "https://127.0.0.1/video.mp4"])

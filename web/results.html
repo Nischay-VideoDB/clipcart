@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClipCart — Your Shoppable Clips</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -21,6 +22,7 @@
     --green:    #18a34a;
   }
 
+  html, body { max-width: 100%; overflow-x: clip; }
   body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; }
 
   /* ── NAV ─────────────────────────────────────────────── */
@@ -228,6 +230,37 @@
   .cdc-buy { background: var(--orange); color: #fff; border: none; padding: 6px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; }
   .cdc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
   .cdc-tag { font-size: 10px; color: var(--muted); }
+
+  @media (max-width: 600px) {
+    nav { padding: 14px 20px; gap: 12px; }
+    .nav-back { display: none; }
+    .page-header { padding: 28px 20px 18px; align-items: flex-start; flex-direction: column; gap: 16px; }
+    .header-stats { width: 100%; justify-content: space-between; gap: 12px; }
+    .hstat { flex: 1 1 0; }
+    .processing-wrap, .results-wrap { padding-inline: 20px; }
+    #prepared-demo-note { padding-inline: 20px !important; }
+    .widget-header { flex-wrap: wrap; gap: 8px; }
+    .widget-header .filename { flex-basis: 100%; order: 4; }
+    .widget-body { height: auto; flex-direction: column; }
+    .widget-sidebar { width: 100%; min-height: 58px; padding: 8px; flex-direction: row; justify-content: space-around; border-right: 0; border-bottom: 1px solid var(--border); gap: 2px; }
+    .sidebar-item { flex: 1 1 0; width: auto; padding: 6px 2px; }
+    .widget-video { min-height: 260px; }
+    .widget-clips { width: 100%; min-height: 240px; border-left: 0; border-top: 1px solid var(--border); }
+    .video-controls { gap: 5px; padding-inline: 8px; }
+    .ctrl-volume { display: none; }
+    .clip-cards-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  @media (max-width: 390px) {
+    nav { padding-inline: 16px; }
+    .page-header { padding-inline: 16px; }
+    .page-title { font-size: 28px; }
+    .processing-wrap, .results-wrap { padding-inline: 16px; }
+    #prepared-demo-note { padding-inline: 16px !important; }
+    .widget-header { padding-inline: 12px; }
+    .widget-video { min-height: 220px; }
+    .widget-clips { min-height: 220px; }
+  }
 </style>
 </head>
 <body>
