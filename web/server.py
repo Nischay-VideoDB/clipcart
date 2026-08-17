@@ -51,10 +51,27 @@ def _set_state(status: str, message: str, progress: int = 0) -> None:
         _state["progress"] = progress
 
 
+def _prepared_illustrative_clips() -> str:
+    """Return fixture-backed illustrative records for the public showcase only."""
+    return config.PREPARED_ILLUSTRATIVE_CLIPS_PATH.read_text(encoding="utf-8")
+
+
 @app.route("/")
 def index():
     """Serve the main UI."""
     return send_from_directory(str(ROOT / "web"), "index.html")
+
+
+@app.route("/api/showcase")
+def showcase_index():
+    """Serve the full landing page through the Vercel function."""
+    return index()
+
+
+@app.route("/api/showcase/results")
+def showcase_results():
+    """Serve the prepared results page through the Vercel function."""
+    return send_from_directory(str(ROOT / "web"), "results.html")
 
 
 @app.route("/<path:filename>")
@@ -72,6 +89,8 @@ def output_files(filename: str):
 @app.route("/api/clips")
 def get_clips():
     """Return the current clips.json or an empty list."""
+    if config.public_showcase():
+        return _prepared_illustrative_clips(), 200, {"Content-Type": "application/json"}
     clips_path = config.clips_output_path()
     if clips_path.exists():
         return clips_path.read_text(encoding="utf-8"), 200, {"Content-Type": "application/json"}
@@ -81,6 +100,13 @@ def get_clips():
 @app.route("/api/status")
 def get_status():
     """Return current pipeline status."""
+    if config.public_showcase():
+        return jsonify({
+            "status": "done",
+            "message": "Prepared illustrative demo - not a live VideoDB/provider run.",
+            "progress": 100,
+            "mode": "showcase",
+        })
     with _lock:
         return jsonify(dict(_state))
 
@@ -108,6 +134,11 @@ def start_run():
         limit (int): Max products to process (default 3).
         no_image_verify (bool): Skip Kimi image check (default false).
     """
+    if not config.processing_enabled():
+        return jsonify({
+            "error": "Live processing is disabled in this prepared-data showcase. Run the local operator workflow with CLIPCART_ALLOW_PROCESSING=true.",
+        }), 403
+
     with _lock:
         if _state["status"] == "running":
             return jsonify({"error": "Pipeline already running."}), 409
@@ -124,11 +155,6 @@ def start_run():
     if not 1 <= limit <= config.DEFAULT_LIMIT:
         return jsonify({"error": f"Products must be between 1 and {config.DEFAULT_LIMIT}."}), 400
     no_image_verify = body.get("no_image_verify", False) is True
-
-    if not config.processing_enabled():
-        return jsonify({
-            "error": "Live processing is disabled in this prepared-data showcase. Run the local operator workflow with CLIPCART_ALLOW_PROCESSING=true.",
-        }), 403
 
     def _run():
         _set_state("running", "Preparing the video for analysis.", progress=5)

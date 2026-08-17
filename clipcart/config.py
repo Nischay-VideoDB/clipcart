@@ -16,6 +16,7 @@ LEAD_SECONDS: float = 8.0
 DEFAULT_LIMIT: int = 6
 
 SAMPLE_CATALOG_PATH: str = str(PROJECT_ROOT / "fixtures" / "catalog.sample.json")
+PREPARED_ILLUSTRATIVE_CLIPS_PATH: Path = PROJECT_ROOT / "public" / "prepared_illustrative_clips.json"
 
 
 def output_dir() -> Path:
@@ -40,6 +41,11 @@ def processing_enabled() -> bool:
     if os.getenv("VERCEL"):
         return False
     return os.getenv("CLIPCART_ALLOW_PROCESSING", "").lower() in {"1", "true", "yes"}
+
+
+def public_showcase() -> bool:
+    """Return whether this request is running on the public Vercel showcase."""
+    return bool(os.getenv("VERCEL"))
 
 
 def get_env(name: str, required: bool = False) -> str | None:

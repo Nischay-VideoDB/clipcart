@@ -1,4 +1,6 @@
+import json
 import socket
+from pathlib import Path
 
 import pytest
 
@@ -26,6 +28,28 @@ def test_vercel_never_enables_processing(monkeypatch):
     monkeypatch.setenv("CLIPCART_ALLOW_PROCESSING", "true")
 
     assert config.processing_enabled() is False
+    assert config.public_showcase() is True
+
+
+def test_prepared_illustrative_records_match_the_tracked_catalog_fixture():
+    catalog = json.loads(Path(config.SAMPLE_CATALOG_PATH).read_text())
+    clips = json.loads(config.PREPARED_ILLUSTRATIVE_CLIPS_PATH.read_text())
+
+    assert [clip["name"] for clip in clips] == [product["name"] for product in catalog]
+    assert [clip["price"] for clip in clips] == [product["price"] for product in catalog]
+    assert [clip["buy_url"] for clip in clips] == [product["buy_url"] for product in catalog]
+    assert all(clip["end"] > clip["start"] and not clip["stream_url"] for clip in clips)
+    assert all("No provider generated" in clip["caption"] for clip in clips)
+
+
+def test_vercel_routes_the_full_prepared_pages_through_the_function():
+    route_config = json.loads((Path(__file__).resolve().parents[1] / "vercel.json").read_text())
+
+    assert {route["source"]: route["destination"] for route in route_config["rewrites"]} == {
+        "/": "/api/index.py?path=showcase",
+        "/results.html": "/api/index.py?path=showcase/results",
+        "/api/:path*": "/api/index.py",
+    }
 
 
 @pytest.mark.parametrize("source", ["http://media.example/video.mp4", "https://localhost/video.mp4", "https://127.0.0.1/video.mp4"])

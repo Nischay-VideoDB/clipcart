@@ -248,8 +248,9 @@
         Try It Now
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <a href="/results.html" class="link-demo">View Last Results</a>
+      <a href="/results.html" class="link-demo" id="prepared-run-link">Explore prepared run</a>
     </div>
+    <p id="prepared-demo-note" hidden style="margin-top:16px;color:var(--muted);font-size:13px">Prepared illustrative demo - not a live VideoDB/provider run. The public workflow cannot upload, analyze, or generate clips.</p>
     <div class="social-proof">
       <div class="avatars">
         <img src="https://i.pravatar.cc/32?img=1" alt="">
@@ -452,6 +453,10 @@
       const button = document.getElementById('btn-run');
       button.disabled = true;
       button.textContent = 'Prepared Showcase';
+      document.getElementById('run-video').disabled = true;
+      document.getElementById('run-limit').disabled = true;
+      document.getElementById('run-no-verify').disabled = true;
+      document.getElementById('prepared-demo-note').hidden = false;
       document.getElementById('status-msg').textContent = capability.message || 'Live processing is disabled.';
       document.getElementById('status-msg').className = 'status-msg';
     } catch (_) {

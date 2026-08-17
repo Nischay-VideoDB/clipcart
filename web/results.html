@@ -263,6 +263,7 @@
     <div class="hstat"><div class="hstat-num" id="hstat-products">0</div><div class="hstat-label">Products</div></div>
   </div>
 </div>
+<p id="prepared-demo-note" hidden style="max-width:1100px;margin:0 auto 20px;padding:0 60px;color:var(--muted);font-size:13px">Prepared illustrative demo - not a live VideoDB/provider run. Product matches, timing, captions, and copy are deterministic fixture examples; no playback or export stream is included.</p>
 
 <!-- PROCESSING STATE -->
 <div class="processing-wrap" id="processing-wrap">
@@ -453,6 +454,7 @@
     pollTimer = setInterval(async () => {
       try {
         const data = await fetch('/api/status').then(r => r.json());
+        if (data.mode === 'showcase') document.getElementById('prepared-demo-note').hidden = false;
         updateProcessingUI(data.status, data.message || '');
 
         if (data.status === 'done') {
@@ -807,6 +809,7 @@
   (async function init() {
     try {
       const status = await fetch('/api/status').then(r => r.json());
+      if (status.mode === 'showcase') document.getElementById('prepared-demo-note').hidden = false;
 
       if (status.status === 'done') {
         await showResults();
