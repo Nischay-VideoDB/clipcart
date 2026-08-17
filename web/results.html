@@ -404,7 +404,7 @@
 
         <!-- Bar 1: main timeline -->
         <div class="main-timeline">
-          <span class="tl-label">FULL VIDEO</span>
+          <span class="tl-label" id="timeline-label">FULL VIDEO</span>
           <div class="timeline-track" id="timeline-track">
             <div class="tl-playhead" id="tl-playhead" style="left:0%"></div>
           </div>
@@ -486,6 +486,11 @@
     const m = Math.floor(sec / 60).toString().padStart(2, '0');
     const s = Math.floor(sec % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
+  }
+
+  function timelineDuration() {
+    const maxEnd = clips.length ? Math.max(...clips.map(clip => clip.end)) : 0;
+    return isPreparedShowcase ? maxEnd : Math.max(maxEnd, VIDEO_DURATION_EST);
   }
 
   // ── processing steps UI ───────────────────────────────
@@ -578,9 +583,12 @@
     document.getElementById('results-wrap').classList.add('visible');
     const subtitle = document.getElementById('page-subtitle');
     if (isPreparedShowcase && activePreparedRun) {
+      document.title = 'ClipCart — Prepared Examples';
       subtitle.textContent = `${text(activePreparedRun.summary)} ${clips.length} prepared moments ready to inspect.`;
       document.getElementById('prepared-demo-note').textContent = `${text(activePreparedRun.provenance)} ${text(activePreparedRun.source_media?.license_note)}`;
       document.getElementById('widget-source-label').textContent = 'Prepared source preview';
+      document.querySelector('#widget-badge span').textContent = 'Prepared review';
+      document.getElementById('timeline-label').textContent = 'PREPARED TIMELINE';
       document.getElementById('hstat-mode').textContent = 'Prepared';
       document.getElementById('shopee-row').hidden = true;
       document.querySelectorAll('.nav-back, .btn-ghost, .btn-newrun').forEach((link) => {
@@ -692,7 +700,7 @@
       return;
     }
 
-    const totalDur = Math.max(...clips.map(c => c.end), VIDEO_DURATION_EST);
+    const totalDur = timelineDuration();
     document.getElementById('tl-total').textContent = fmt(totalDur);
 
     const track = document.getElementById('timeline-track');
@@ -854,7 +862,7 @@
       setCtrlTime(cur, dur);
       document.getElementById('ctrl-scrubber').value = (cur / dur * 100).toFixed(2);
       if (activeIdx >= 0 && clips[activeIdx]) {
-        const totalDur = Math.max(...clips.map(c => c.end), VIDEO_DURATION_EST);
+        const totalDur = timelineDuration();
         const absTime = clips[activeIdx].start + cur;
         document.getElementById('tl-playhead').style.left = Math.min(absTime / totalDur * 100, 100).toFixed(2) + '%';
       }

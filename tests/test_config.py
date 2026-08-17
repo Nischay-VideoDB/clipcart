@@ -90,6 +90,8 @@ def test_public_pages_include_mobile_layout_guards_and_the_branded_favicon():
     assert ".header-stats { width: 100%; justify-content: space-between;" in results_source
     assert ".widget-body { height: auto; flex-direction: column;" in results_source
     assert ".shopee-row[hidden] { display: none; }" in results_source
+    assert "document.title = 'ClipCart — Prepared Examples'" in results_source
+    assert "return isPreparedShowcase ? maxEnd" in results_source
 
 
 @pytest.mark.parametrize("source", ["http://media.example/video.mp4", "https://localhost/video.mp4", "https://127.0.0.1/video.mp4"])
