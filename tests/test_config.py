@@ -59,6 +59,9 @@ def test_versioned_prepared_runs_are_complete_illustrative_and_playable():
 def test_vercel_routes_the_full_prepared_pages_through_the_function():
     route_config = json.loads((Path(__file__).resolve().parents[1] / "vercel.json").read_text())
 
+    assert route_config["functions"]["api/index.py"]["includeFiles"] == (
+        "{public/prepared_runs.v1.json,web/results.html}"
+    )
     assert {route["source"]: route["destination"] for route in route_config["rewrites"]} == {
         "/favicon.ico": "/favicon.svg",
         "/": "/api/index.py?path=showcase",

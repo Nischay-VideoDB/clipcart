@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.py": {
+      "includeFiles": "{public/prepared_runs.v1.json,web/results.html}"
+    }
+  },
   "rewrites": [
     {
       "source": "/favicon.ico",
