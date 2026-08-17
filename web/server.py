@@ -33,7 +33,7 @@ app = Flask(__name__, static_folder=str(ROOT / "web"))
 logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
 logger = logging.getLogger(__name__)
 
-# shared pipeline state (single-user POC — not thread-safe for multi-user)
+# Shared state is guarded for one local operator. It is not a durable job queue.
 _state: dict = {"status": "idle", "message": "Ready.", "progress": 0}
 _lock = threading.Lock()
 
@@ -85,6 +85,20 @@ def get_status():
         return jsonify(dict(_state))
 
 
+@app.route("/api/capabilities")
+def capabilities():
+    enabled = config.processing_enabled()
+    return jsonify({
+        "mode": "operator" if enabled else "showcase",
+        "processing_enabled": enabled,
+        "message": (
+            "Local operator processing is enabled."
+            if enabled
+            else "This is a prepared-data showcase. Live processing is disabled."
+        ),
+    })
+
+
 @app.route("/api/run", methods=["POST"])
 def start_run():
     """Start the pipeline in a background thread.
@@ -111,6 +125,11 @@ def start_run():
         return jsonify({"error": f"Products must be between 1 and {config.DEFAULT_LIMIT}."}), 400
     no_image_verify = body.get("no_image_verify", False) is True
 
+    if not config.processing_enabled():
+        return jsonify({
+            "error": "Live processing is disabled in this prepared-data showcase. Run the local operator workflow with CLIPCART_ALLOW_PROCESSING=true.",
+        }), 403
+
     def _run():
         _set_state("running", "Preparing the video for analysis.", progress=5)
         try:
@@ -125,7 +144,11 @@ def start_run():
             logger.exception("Pipeline failed")
             _set_state("error", "The pipeline could not complete. Review server logs and try again.", progress=0)
 
-    threading.Thread(target=_run, daemon=True).start()
+    with _lock:
+        if _state["status"] == "running":
+            return jsonify({"error": "Pipeline already running."}), 409
+        _state.update({"status": "running", "message": "Preparing the video for analysis.", "progress": 5})
+        threading.Thread(target=_run, daemon=True).start()
     return jsonify({"status": "running", "message": "Pipeline started."})
 
 

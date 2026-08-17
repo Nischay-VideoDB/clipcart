@@ -475,12 +475,14 @@
   // ── show results ───────────────────────────────────────
   async function showResults() {
     const clipsResp = await fetch('/api/clips');
-    clips = await clipsResp.json();
+    const payload = await clipsResp.json();
+    clips = (Array.isArray(payload) ? payload : []).map(normalizeClip);
 
     document.getElementById('processing-wrap').style.display = 'none';
     document.getElementById('results-wrap').classList.add('visible');
     document.getElementById('page-subtitle').textContent = `${clips.length} clip${clips.length !== 1 ? 's' : ''} ready to share`;
-    document.getElementById('page-title').innerHTML = 'YOUR <span>SHOPPABLE CLIPS</span>';
+    const title = document.getElementById('page-title');
+    title.replaceChildren(document.createTextNode('YOUR '), makeElement('span', '', 'SHOPPABLE CLIPS'));
 
     document.getElementById('header-stats').style.display = 'flex';
     document.getElementById('hstat-clips').textContent = clips.length;
@@ -491,11 +493,86 @@
     renderDetailCards();
   }
 
+  function text(value) {
+    return typeof value === 'string' ? value : String(value || '');
+  }
+
+  function number(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function safeUrl(value) {
+    try {
+      const url = new URL(text(value), window.location.origin);
+      return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : '';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function normalizeClip(value) {
+    const clip = value && typeof value === 'object' ? value : {};
+    const start = number(clip.start);
+    return {
+      name: text(clip.name), price: text(clip.price), hook: text(clip.hook), caption: text(clip.caption),
+      hashtags: Array.isArray(clip.hashtags) ? clip.hashtags.map(text) : [],
+      start, end: Math.max(start, number(clip.end)), image_url: safeUrl(clip.image_url),
+      buy_url: safeUrl(clip.buy_url), stream_url: safeUrl(clip.stream_url),
+    };
+  }
+
+  function makeElement(tag, className, value) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (value !== undefined) element.textContent = text(value);
+    return element;
+  }
+
+  function imageElement(className, url, alt) {
+    if (!url) return makeElement('div', className);
+    const image = makeElement('img', className);
+    image.src = url;
+    image.alt = text(alt);
+    image.addEventListener('error', () => image.replaceWith(makeElement('div', className)));
+    return image;
+  }
+
+  function setSafeLink(link, url) {
+    if (url) {
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+    } else {
+      link.removeAttribute('href');
+      link.setAttribute('aria-disabled', 'true');
+    }
+  }
+
+  function infoRow(label, value, className = '') {
+    const row = makeElement('div', 'info-row');
+    row.append(makeElement('div', 'info-label', label), makeElement('div', `info-value ${className}`.trim(), value));
+    return row;
+  }
+
+  function feedback() {
+    return makeElement('div', 'copy-feedback', 'Copied!');
+  }
+
+  function copyButton(label, callback) {
+    const button = makeElement('button', 'info-btn secondary', label);
+    button.type = 'button';
+    button.addEventListener('click', callback);
+    return button;
+  }
+
   // ── clip rendering ─────────────────────────────────────
   function renderClips() {
     const list = document.getElementById('clip-list');
     if (!clips.length) {
-      list.innerHTML = '<div style="padding:24px;text-align:center;color:#aaa;font-size:12px">No clips found.</div>';
+      const empty = makeElement('div', '', 'No clips found.');
+      empty.style.cssText = 'padding:24px;text-align:center;color:#aaa;font-size:12px';
+      list.replaceChildren(empty);
       return;
     }
 
@@ -503,7 +580,10 @@
     document.getElementById('tl-total').textContent = fmt(totalDur);
 
     const track = document.getElementById('timeline-track');
-    track.innerHTML = '<div class="tl-playhead" id="tl-playhead" style="left:0%"></div>';
+    const playhead = makeElement('div', 'tl-playhead');
+    playhead.id = 'tl-playhead';
+    playhead.style.left = '0%';
+    track.replaceChildren(playhead);
     clips.forEach((clip, i) => {
       const left = (clip.start / totalDur * 100).toFixed(1);
       const width = Math.max((clip.end - clip.start) / totalDur * 100, 2).toFixed(1);
@@ -516,17 +596,13 @@
       track.appendChild(marker);
     });
 
-    list.innerHTML = '';
+    list.replaceChildren();
     clips.forEach((clip, i) => {
       const card = document.createElement('div');
       card.className = 'clip-card';
-      card.innerHTML = `
-        ${clip.image_url ? `<img class="clip-thumb" src="${clip.image_url}" alt="" onerror="this.style.background='#e8e3da'">` : '<div class="clip-thumb"></div>'}
-        <div class="clip-info">
-          <div class="clip-name">${clip.name}</div>
-          <div class="clip-time">${fmt(clip.start)} – ${fmt(clip.end)}</div>
-        </div>
-        <div class="clip-check"><svg viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5 3.5-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+      const info = makeElement('div', 'clip-info');
+      info.append(makeElement('div', 'clip-name', clip.name), makeElement('div', 'clip-time', `${fmt(clip.start)} – ${fmt(clip.end)}`));
+      card.append(imageElement('clip-thumb', clip.image_url, ''), info, makeElement('div', 'clip-check', '✓'));
       card.addEventListener('click', () => playClip(i));
       list.appendChild(card);
     });
@@ -537,24 +613,22 @@
   function renderDetailCards() {
     const section = document.getElementById('clip-cards-section');
     if (!clips.length) { section.style.display = 'none'; return; }
-    section.innerHTML = `<div class="section-title">Clip Details &amp; Copy</div><div class="clip-cards-grid" id="cards-grid"></div>`;
-    const grid = document.getElementById('cards-grid');
+    section.style.display = '';
+    const grid = makeElement('div', 'clip-cards-grid');
+    grid.id = 'cards-grid';
+    section.replaceChildren(makeElement('div', 'section-title', 'Clip Details & Copy'), grid);
     clips.forEach(clip => {
-      const tags = (clip.hashtags || []).map(h => `<span class="cdc-tag">#${h}</span>`).join(' ');
       const card = document.createElement('div');
       card.className = 'clip-detail-card';
-      card.innerHTML = `
-        <img class="cdc-thumb" src="${clip.image_url || ''}" alt="${clip.name}" onerror="this.style.background='#e8e3da'">
-        <div class="cdc-body">
-          <div class="cdc-name">${clip.name}</div>
-          <div class="cdc-hook">${clip.hook || ''}</div>
-          <div class="cdc-caption">${clip.caption || ''}</div>
-          <div class="cdc-tags">${tags}</div>
-          <div class="cdc-footer">
-            <span class="cdc-price">${clip.price}</span>
-            <a class="cdc-buy" href="${clip.buy_url}" target="_blank" rel="noopener">Buy Now</a>
-          </div>
-        </div>`;
+      const body = makeElement('div', 'cdc-body');
+      const tags = makeElement('div', 'cdc-tags');
+      clip.hashtags.forEach((tag) => tags.append(makeElement('span', 'cdc-tag', `#${tag}`)));
+      const footer = makeElement('div', 'cdc-footer');
+      const buy = makeElement('a', 'cdc-buy', 'Buy Now');
+      setSafeLink(buy, clip.buy_url);
+      footer.append(makeElement('span', 'cdc-price', clip.price), buy);
+      body.append(makeElement('div', 'cdc-name', clip.name), makeElement('div', 'cdc-hook', clip.hook), makeElement('div', 'cdc-caption', clip.caption), tags, footer);
+      card.append(imageElement('cdc-thumb', clip.image_url, clip.name), body);
       grid.appendChild(card);
     });
   }
@@ -573,19 +647,21 @@
     video.muted = false;
     video.volume = parseFloat(document.getElementById('ctrl-volume').value);
 
-    if (Hls.isSupported()) {
+    if (clip.stream_url && Hls.isSupported()) {
       hlsPlayer = new Hls();
       hlsPlayer.loadSource(clip.stream_url);
       hlsPlayer.attachMedia(video);
       hlsPlayer.on(Hls.Events.MANIFEST_PARSED, () => setPlayIcon(false));
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    } else if (clip.stream_url && video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = clip.stream_url;
+    } else {
+      video.removeAttribute('src');
     }
 
     document.getElementById('price-overlay').style.display = 'flex';
     document.getElementById('overlay-price').textContent = clip.price;
     document.getElementById('overlay-name').textContent = clip.name;
-    document.getElementById('overlay-buy').href = clip.buy_url;
+    setSafeLink(document.getElementById('overlay-buy'), clip.buy_url);
 
     setCtrlTime(0, 0);
     document.getElementById('ctrl-scrubber').value = 0;
@@ -665,33 +741,44 @@
   }
 
   function renderInfoPanels(clip) {
-    document.getElementById('trim-panel').innerHTML = `
-      <div class="info-row"><div class="info-label">Product</div><div class="info-value">${clip.name}</div></div>
-      <div class="info-row"><div class="info-label">Start</div><div class="info-value mono">${fmt(clip.start)} &nbsp;(${clip.start.toFixed(2)}s)</div></div>
-      <div class="info-row"><div class="info-label">End</div><div class="info-value mono">${fmt(clip.end)} &nbsp;(${clip.end.toFixed(2)}s)</div></div>
-      <div class="info-row"><div class="info-label">Duration</div><div class="info-value mono">${(clip.end - clip.start).toFixed(1)}s</div></div>`;
+    document.getElementById('trim-panel').replaceChildren(
+      infoRow('Product', clip.name), infoRow('Start', `${fmt(clip.start)} (${clip.start.toFixed(2)}s)`, 'mono'),
+      infoRow('End', `${fmt(clip.end)} (${clip.end.toFixed(2)}s)`, 'mono'), infoRow('Duration', `${(clip.end - clip.start).toFixed(1)}s`, 'mono'),
+    );
 
-    const tags = (clip.hashtags || []).map(h => `<span class="info-chip">#${h}</span>`).join('');
-    document.getElementById('captions-panel').innerHTML = `
-      <div class="info-row"><div class="info-label">Hook</div><div class="info-value">${clip.hook || '—'}</div></div>
-      <div class="info-row"><div class="info-label">Caption</div><div class="info-value">${clip.caption || '—'}</div></div>
-      <div class="info-row"><div class="info-label">Hashtags</div><div class="info-value">${tags || '—'}</div></div>
-      <button class="info-btn secondary" onclick="copyCaption(${activeIdx})">Copy Caption</button>
-      <div class="copy-feedback" id="copy-caption-fb">Copied!</div>`;
+    const tags = makeElement('div', 'info-value');
+    if (clip.hashtags.length) clip.hashtags.forEach((tag) => tags.append(makeElement('span', 'info-chip', `#${tag}`)));
+    else tags.textContent = '—';
+    const tagsRow = makeElement('div', 'info-row');
+    tagsRow.append(makeElement('div', 'info-label', 'Hashtags'), tags);
+    const captions = document.getElementById('captions-panel');
+    const captionFeedback = feedback();
+    captionFeedback.id = 'copy-caption-fb';
+    captions.replaceChildren(
+      infoRow('Hook', clip.hook || '—'), infoRow('Caption', clip.caption || '—'), tagsRow,
+      copyButton('Copy Caption', () => copyCaption(activeIdx)), captionFeedback,
+    );
 
-    document.getElementById('price-panel').innerHTML = `
-      <div class="info-row"><div class="info-label">Price</div><div class="info-value" style="font-size:22px;font-weight:700;color:var(--orange)">${clip.price}</div></div>
-      <div class="info-row"><div class="info-label">Product URL</div><div class="info-value mono">${clip.buy_url}</div></div>
-      <a class="info-btn" href="${clip.buy_url}" target="_blank" rel="noopener">Open Product Page</a>
-      <button class="info-btn secondary" onclick="copyText('${clip.buy_url}', 'copy-url-fb')">Copy URL</button>
-      <div class="copy-feedback" id="copy-url-fb">Copied!</div>`;
+    const price = infoRow('Price', clip.price);
+    price.querySelector('.info-value').style.cssText = 'font-size:22px;font-weight:700;color:var(--orange)';
+    const productLink = makeElement('a', 'info-btn', 'Open Product Page');
+    setSafeLink(productLink, clip.buy_url);
+    const priceFeedback = feedback();
+    priceFeedback.id = 'copy-url-fb';
+    document.getElementById('price-panel').replaceChildren(
+      price, infoRow('Product URL', clip.buy_url || 'Unavailable', 'mono'), productLink,
+      copyButton('Copy URL', () => copyText(clip.buy_url, 'copy-url-fb')), priceFeedback,
+    );
 
-    document.getElementById('export-panel').innerHTML = `
-      <div class="info-row"><div class="info-label">HLS Stream URL</div><div class="info-value mono" style="font-size:10px">${clip.stream_url}</div></div>
-      <a class="info-btn" href="${clip.stream_url}" target="_blank" rel="noopener">Open in Browser</a>
-      <button class="info-btn secondary" onclick="copyText('${clip.stream_url}', 'copy-stream-fb')">Copy Stream URL</button>
-      <div class="copy-feedback" id="copy-stream-fb">Copied!</div>
-      <div class="info-row" style="margin-top:4px"><div class="info-label">VLC</div><div class="info-value" style="font-size:11px;color:var(--muted)">Media &rarr; Open Network Stream &rarr; paste URL</div></div>`;
+    const streamLink = makeElement('a', 'info-btn', 'Open in Browser');
+    setSafeLink(streamLink, clip.stream_url);
+    const streamFeedback = feedback();
+    streamFeedback.id = 'copy-stream-fb';
+    document.getElementById('export-panel').replaceChildren(
+      infoRow('HLS Stream URL', clip.stream_url || 'Unavailable', 'mono'), streamLink,
+      copyButton('Copy Stream URL', () => copyText(clip.stream_url, 'copy-stream-fb')), streamFeedback,
+      infoRow('VLC', 'Media → Open Network Stream → paste URL'),
+    );
   }
 
   function copyText(text, feedbackId) {
@@ -713,7 +800,7 @@
   function toggleShopee() {
     shopeeLinked = !shopeeLinked;
     document.getElementById('shopee-toggle').classList.toggle('on', shopeeLinked);
-    if (shopeeLinked && activeIdx >= 0) window.open(clips[activeIdx].buy_url, '_blank', 'noopener');
+    if (shopeeLinked && activeIdx >= 0 && clips[activeIdx].buy_url) window.open(clips[activeIdx].buy_url, '_blank', 'noopener');
   }
 
   // ── init ───────────────────────────────────────────────

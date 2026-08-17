@@ -19,7 +19,7 @@ SAMPLE_CATALOG_PATH: str = str(PROJECT_ROOT / "fixtures" / "catalog.sample.json"
 
 
 def output_dir() -> Path:
-    """Return the durable directory used for web-run output and upload caching."""
+    """Return the public/generated clip-output directory."""
     value = os.getenv("CLIPCART_DATA_DIR")
     return Path(value).expanduser().resolve() if value else PROJECT_ROOT / "output"
 
@@ -29,7 +29,17 @@ def clips_output_path() -> Path:
 
 
 def video_cache_path() -> Path:
-    return output_dir() / "video_cache.json"
+    """Keep provider upload IDs out of the browser-served output directory."""
+    value = os.getenv("CLIPCART_STATE_DIR")
+    state_dir = Path(value).expanduser().resolve() if value else PROJECT_ROOT / "state"
+    return state_dir / "video_cache.json"
+
+
+def processing_enabled() -> bool:
+    """Require an explicit local operator opt-in before a route can incur provider cost."""
+    if os.getenv("VERCEL"):
+        return False
+    return os.getenv("CLIPCART_ALLOW_PROCESSING", "").lower() in {"1", "true", "yes"}
 
 
 def get_env(name: str, required: bool = False) -> str | None:

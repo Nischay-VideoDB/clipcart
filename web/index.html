@@ -444,6 +444,20 @@
     btn.disabled = false;
     btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><polygon points="3,1 13,7 3,13" fill="#fff"/></svg> Run';
   }
+
+  (async function configureProcessingAccess() {
+    try {
+      const capability = await fetch('/api/capabilities').then((response) => response.json());
+      if (capability.processing_enabled) return;
+      const button = document.getElementById('btn-run');
+      button.disabled = true;
+      button.textContent = 'Prepared Showcase';
+      document.getElementById('status-msg').textContent = capability.message || 'Live processing is disabled.';
+      document.getElementById('status-msg').className = 'status-msg';
+    } catch (_) {
+      // The local operator server remains usable when capability probing is unavailable.
+    }
+  })();
 </script>
 </body>
 </html>

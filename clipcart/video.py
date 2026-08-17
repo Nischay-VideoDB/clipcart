@@ -24,11 +24,11 @@ def connect() -> Any:
     return videodb.connect(api_key=api_key)
 
 
-def get_or_upload(conn: Any, source: str, cache_path: str = "output/video_cache.json") -> Any:
+def get_or_upload(conn: Any, source: str, cache_path: str = "state/video_cache.json") -> Any:
     """Return an already-uploaded video if cached, otherwise upload and index.
 
     Saves the video ID to a JSON file so subsequent runs skip the upload.
-    Delete output/video_cache.json to force a fresh upload.
+    Delete the private state cache to force a fresh upload.
 
     Args:
         conn: An authenticated VideoDB connection.
@@ -55,8 +55,10 @@ def get_or_upload(conn: Any, source: str, cache_path: str = "output/video_cache.
 
     video = upload_and_index(conn, source)
 
-    cache_file.parent.mkdir(exist_ok=True)
-    cache_file.write_text(json.dumps({"source": source, "video_id": video.id}))
+    cache_file.parent.mkdir(parents=True, exist_ok=True)
+    temporary_file = cache_file.with_suffix(f"{cache_file.suffix}.tmp")
+    temporary_file.write_text(json.dumps({"source": source, "video_id": video.id}))
+    temporary_file.replace(cache_file)
     logger.info("Cached video id=%s to %s.", video.id, cache_path)
     return video
 

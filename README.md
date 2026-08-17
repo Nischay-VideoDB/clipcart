@@ -43,7 +43,7 @@ cp .env.example .env
 | Variable | Required | Description |
 |---|---|---|
 | `VIDEO_DB_API_KEY` | Yes | VideoDB API key |
-| `MOONSHOT_API_KEY` | Yes | Kimi (Moonshot) API key for image verification and copywriting |
+| `MOONSHOT_API_KEY` | No | Kimi (Moonshot) API key for image verification and copywriting |
 | `BRIGHTDATA_API_TOKEN` | No | BrightData token for live catalog scraping |
 | `BRIGHTDATA_ZONE` | No | BrightData zone (default: `web_unlocker`) |
 | `SHOPEE_STORE_URL` | No | Shopee store URL to scrape |
@@ -84,6 +84,8 @@ uv run python web/server.py
 The web server exposes the pipeline via a REST API and serves a gallery UI. Its
 browser-runner accepts a public HTTPS video URL only; local files remain a CLI
 feature. The browser-runner caps each job at six products to bound provider use.
+Set `CLIPCART_ALLOW_PROCESSING=true` only for a locally supervised operator
+session before using `POST /api/run` - the default is read-only.
 
 - `GET /api/clips` — returns the current `output/clips.json`
 - `GET /api/status` — pipeline status (`idle` / `running` / `done` / `error`)
@@ -134,14 +136,15 @@ data/              — sample video and catalog (not committed)
 output/            — generated clips.json (not committed)
 ```
 
-## Deployment preparation
+## Vercel showcase
 
-Run the Flask app as one worker with a persistent writable `CLIPCART_DATA_DIR`.
-The current in-process job status is intentionally single-worker; a horizontally
-scaled deployment needs a durable job queue and run store before it can safely
-accept concurrent jobs. `VIDEO_DB_API_KEY` is required for processing;
-`MOONSHOT_API_KEY` and Bright Data are optional enhancements with safe local
-fallbacks for copy and catalog lookup.
+The Vercel entrypoint is a prepared-data, read-only showcase. Its static landing
+page lives in `public/`, while `/api/*` routes through the Flask function. It never starts
+the in-process filesystem job or spends provider credits, even if credentials
+are configured. Run processing only in a supervised local operator session with
+`CLIPCART_ALLOW_PROCESSING=true`. Before any multi-user or server-side job
+deployment, replace the in-process state with a durable queue, run store, and
+object storage.
 
 ## Catalog JSON format
 
