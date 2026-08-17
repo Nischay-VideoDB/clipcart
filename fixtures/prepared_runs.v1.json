@@ -12,6 +12,7 @@
       "source_media": {
         "title": "MDN flower video",
         "url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+        "duration_seconds": 5.055,
         "license_note": "Public CC0 media test asset used only for playback preview."
       },
       "clips": [
@@ -23,9 +24,9 @@
           "hook": "A warm tabletop moment for a slow-morning coffee ritual.",
           "caption": "Pour, pause, and make the everyday cup feel considered. Prepared illustrative copy.",
           "hashtags": ["preparedDemo", "homeCoffee", "tabletop"],
-          "start": 6.0,
-          "end": 18.0,
-          "stream_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4#t=6,18",
+          "start": 0.2,
+          "end": 1.6,
+          "stream_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4#t=0.2,1.6",
           "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
         },
         {
@@ -36,9 +37,9 @@
           "hook": "A simple texture cue for an elevated table setting.",
           "caption": "Soft texture, relaxed folds, and an easy table reset. Prepared illustrative copy.",
           "hashtags": ["preparedDemo", "linen", "homeEdit"],
-          "start": 21.0,
-          "end": 33.0,
-          "stream_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4#t=21,33",
+          "start": 1.7,
+          "end": 3.2,
+          "stream_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4#t=1.7,3.2",
           "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
         },
         {
@@ -49,9 +50,9 @@
           "hook": "A clear glass detail for a quiet hosting story.",
           "caption": "A bright, practical piece for water, cold brew, or flowers. Prepared illustrative copy.",
           "hashtags": ["preparedDemo", "glassware", "hosting"],
-          "start": 36.0,
-          "end": 49.0,
-          "stream_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4#t=36,49",
+          "start": 3.3,
+          "end": 4.8,
+          "stream_url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4#t=3.3,4.8",
           "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
         }
       ]
@@ -65,6 +66,7 @@
       "source_media": {
         "title": "Sintel trailer - Blender Foundation",
         "url": "https://media.w3.org/2010/05/sintel/trailer.mp4",
+        "duration_seconds": 52.208,
         "license_note": "Sintel trailer © Blender Foundation | durian.blender.org, licensed CC BY 3.0 and mirrored by W3C; used only as a source preview."
       },
       "clips": [
@@ -76,9 +78,9 @@
           "hook": "Pack light for the route ahead.",
           "caption": "A compact carry built for the essentials and the unexpected. Prepared illustrative copy.",
           "hashtags": ["preparedDemo", "trailGear", "daypack"],
-          "start": 8.0,
-          "end": 22.0,
-          "stream_url": "https://media.w3.org/2010/05/sintel/trailer.mp4#t=8,22",
+          "start": 4.0,
+          "end": 14.0,
+          "stream_url": "https://media.w3.org/2010/05/sintel/trailer.mp4#t=4,14",
           "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
         },
         {
@@ -89,9 +91,9 @@
           "hook": "A hydration beat for every mile.",
           "caption": "Cold water, durable finish, and one less thing to think about. Prepared illustrative copy.",
           "hashtags": ["preparedDemo", "outdoors", "hydration"],
-          "start": 31.0,
-          "end": 45.0,
-          "stream_url": "https://media.w3.org/2010/05/sintel/trailer.mp4#t=31,45",
+          "start": 18.0,
+          "end": 30.0,
+          "stream_url": "https://media.w3.org/2010/05/sintel/trailer.mp4#t=18,30",
           "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
         },
         {
@@ -102,9 +104,9 @@
           "hook": "Bring a reliable pool of light to camp.",
           "caption": "A small lantern with a big role after sunset. Prepared illustrative copy.",
           "hashtags": ["preparedDemo", "camping", "lantern"],
-          "start": 54.0,
-          "end": 68.0,
-          "stream_url": "https://media.w3.org/2010/05/sintel/trailer.mp4#t=54,68",
+          "start": 34.0,
+          "end": 48.0,
+          "stream_url": "https://media.w3.org/2010/05/sintel/trailer.mp4#t=34,48",
           "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
         }
       ]
@@ -118,6 +120,7 @@
       "source_media": {
         "title": "Big Buck Bunny trailer - Blender Foundation",
         "url": "https://media.w3.org/2010/05/bunny/trailer.mp4",
+        "duration_seconds": 33.003,
         "license_note": "Big Buck Bunny trailer © 2008 Blender Foundation | bigbuckbunny.org, licensed CC BY 3.0 and mirrored by W3C; used only as a source preview."
       },
       "clips": [
@@ -129,9 +132,9 @@
           "hook": "Give the desk a calmer, more focused glow.",
           "caption": "An adjustable light cue for late notes and early starts. Prepared illustrative copy.",
           "hashtags": ["preparedDemo", "deskSetup", "taskLight"],
-          "start": 11.0,
-          "end": 25.0,
-          "stream_url": "https://media.w3.org/2010/05/bunny/trailer.mp4#t=11,25",
+          "start": 2.0,
+          "end": 10.0,
+          "stream_url": "https://media.w3.org/2010/05/bunny/trailer.mp4#t=2,10",
           "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
         },
         {
@@ -142,9 +145,9 @@
           "hook": "A clean visual reset for the work surface.",
           "caption": "One grounded layer for keyboard, notebook, and daily tools. Prepared illustrative copy.",
           "hashtags": ["preparedDemo", "workspace", "deskMat"],
-          "start": 39.0,
-          "end": 53.0,
-          "stream_url": "https://media.w3.org/2010/05/bunny/trailer.mp4#t=39,53",
+          "start": 12.0,
+          "end": 21.0,
+          "stream_url": "https://media.w3.org/2010/05/bunny/trailer.mp4#t=12,21",
           "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
         },
         {
@@ -155,9 +158,9 @@
           "hook": "Close on an organized desk, not a tangle.",
           "caption": "A simple hidden-helper moment for an uncluttered setup. Prepared illustrative copy.",
           "hashtags": ["preparedDemo", "cableManagement", "workFromHome"],
-          "start": 66.0,
-          "end": 80.0,
-          "stream_url": "https://media.w3.org/2010/05/bunny/trailer.mp4#t=66,80",
+          "start": 23.0,
+          "end": 31.0,
+          "stream_url": "https://media.w3.org/2010/05/bunny/trailer.mp4#t=23,31",
           "playback_note": "Illustrative source-preview fragment - not a generated commerce clip."
         }
       ]

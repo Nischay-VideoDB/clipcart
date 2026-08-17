@@ -51,7 +51,9 @@ def test_versioned_prepared_runs_are_complete_illustrative_and_playable():
         assert run["source_media"]["url"].startswith("https://")
         for clip in run["clips"]:
             assert clip["end"] > clip["start"]
+            assert clip["end"] <= run["source_media"]["duration_seconds"]
             assert clip["stream_url"].startswith("https://")
+            assert clip["stream_url"].endswith(f"#t={clip['start']:g},{clip['end']:g}")
             assert clip["image_url"].startswith("/assets/")
             assert "illustrative" in clip["playback_note"].lower()
 
