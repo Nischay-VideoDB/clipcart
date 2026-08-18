@@ -28,12 +28,16 @@ def test_video_cache_is_kept_outside_browser_output(monkeypatch, tmp_path):
     assert config.video_cache_path().parent != config.output_dir()
 
 
-def test_vercel_never_enables_processing(monkeypatch):
+def test_vercel_requires_all_live_services(monkeypatch):
     monkeypatch.setenv("VERCEL", "1")
     monkeypatch.setenv("CLIPCART_ALLOW_PROCESSING", "true")
 
     assert config.processing_enabled() is False
-    assert config.public_showcase() is True
+    assert config.public_showcase() is False
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://example.invalid/db")
+    monkeypatch.setenv("VIDEO_DB_API_KEY", "test-key")
+    assert config.processing_enabled() is True
 
 
 def test_versioned_prepared_runs_are_complete_illustrative_and_playable():
@@ -61,12 +65,11 @@ def test_versioned_prepared_runs_are_complete_illustrative_and_playable():
 def test_vercel_routes_the_full_prepared_pages_through_the_function():
     route_config = json.loads((Path(__file__).resolve().parents[1] / "vercel.json").read_text())
 
-    assert route_config["functions"]["api/index.py"]["includeFiles"] == (
-        "{fixtures/prepared_runs.v1.json,web/results.html}"
-    )
+    assert route_config["functions"]["api/index.py"]["includeFiles"] == "{fixtures/*.json,web/*.html}"
+    assert route_config["functions"]["api/index.py"]["maxDuration"] == 800
     assert {route["source"]: route["destination"] for route in route_config["rewrites"]} == {
         "/favicon.ico": "/favicon.svg",
-        "/": "/api/index.py?path=showcase",
+        "/": "/api/index.py",
         "/results.html": "/api/index.py?path=showcase/results",
         "/api/:path*": "/api/index.py",
     }

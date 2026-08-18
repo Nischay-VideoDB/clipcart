@@ -138,13 +138,14 @@ output/            — generated clips.json (not committed)
 
 ## Vercel showcase
 
-The Vercel entrypoint is a prepared-data, read-only showcase. Its static landing
-page lives in `public/`, while `/api/*` routes through the Flask function. It never starts
-the in-process filesystem job or spends provider credits, even if credentials
-are configured. Run processing only in a supervised local operator session with
-`CLIPCART_ALLOW_PROCESSING=true`. Before any multi-user or server-side job
-deployment, replace the in-process state with a durable queue, run store, and
-object storage.
+The Vercel deployment exposes both the original live workflow and the prepared
+examples. Public live runs accept a public HTTPS video URL, use VideoDB for
+ingest/index/search/clip streams, use OpenRouter for commerce copy, and persist
+step state/results in Azure PostgreSQL. Each request executes one leased step,
+so a browser or function restart resumes from committed state rather than a
+thread or local file. Runs are idempotent, retry provider failures twice, cap at
+three products, and rate-limit new jobs per requester. Prepared examples remain
+available at `/results.html?prepared=1` without spending provider credits.
 
 ## Catalog JSON format
 

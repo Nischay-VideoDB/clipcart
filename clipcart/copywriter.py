@@ -37,10 +37,11 @@ def make_client() -> OpenAI | None:
     Returns:
         OpenAI: A configured client for the Moonshot base URL.
     """
-    api_key = get_env("MOONSHOT_API_KEY")
+    api_key = get_env("MOONSHOT_API_KEY") or get_env("OPEN_ROUTER_API_KEY")
     if not api_key:
         return None
-    return OpenAI(api_key=api_key, base_url="https://api.moonshot.ai/v1")
+    base_url = "https://api.moonshot.ai/v1" if get_env("MOONSHOT_API_KEY") else "https://openrouter.ai/api/v1"
+    return OpenAI(api_key=api_key, base_url=base_url)
 
 
 def write_copy(
@@ -73,7 +74,7 @@ def write_copy(
 
     try:
         resp = client.chat.completions.create(
-            model="kimi-k2.6",
+            model=get_env("CLIPCART_COPY_MODEL") or get_env("OPENROUTER_MODEL") or "openai/gpt-4.1-mini",
             response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},

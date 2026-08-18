@@ -2,7 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/index.py": {
-      "includeFiles": "{fixtures/prepared_runs.v1.json,web/results.html}"
+      "includeFiles": "{fixtures/*.json,web/*.html}",
+      "maxDuration": 800
     }
   },
   "rewrites": [
@@ -12,7 +13,7 @@
     },
     {
       "source": "/",
-      "destination": "/api/index.py?path=showcase"
+      "destination": "/api/index.py"
     },
     {
       "source": "/results.html",

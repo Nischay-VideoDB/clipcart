@@ -13,7 +13,7 @@ load_dotenv(PROJECT_ROOT / ".env")
 MIN_CLIP_LEN: float = 12.0
 MAX_CLIP_LEN: float = 40.0
 LEAD_SECONDS: float = 8.0
-DEFAULT_LIMIT: int = 6
+DEFAULT_LIMIT: int = 3
 
 SAMPLE_CATALOG_PATH: str = str(PROJECT_ROOT / "fixtures" / "catalog.sample.json")
 
@@ -36,15 +36,16 @@ def video_cache_path() -> Path:
 
 
 def processing_enabled() -> bool:
-    """Require an explicit local operator opt-in before a route can incur provider cost."""
-    if os.getenv("VERCEL"):
-        return False
-    return os.getenv("CLIPCART_ALLOW_PROCESSING", "").lower() in {"1", "true", "yes"}
+    """Enable the durable public runner only when all required services exist."""
+    explicitly_enabled = os.getenv("CLIPCART_ALLOW_PROCESSING", "").lower() in {"1", "true", "yes"}
+    return explicitly_enabled and bool(
+        os.getenv("DATABASE_URL") and os.getenv("VIDEO_DB_API_KEY")
+    )
 
 
 def public_showcase() -> bool:
-    """Return whether this request is running on the public Vercel showcase."""
-    return bool(os.getenv("VERCEL"))
+    """Prepared examples remain available, but are no longer the only public mode."""
+    return False
 
 
 def get_env(name: str, required: bool = False) -> str | None:

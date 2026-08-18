@@ -46,3 +46,4 @@ desktop.ini
 
 # Playwright browsers
 playwright-browsers/
+.vercel

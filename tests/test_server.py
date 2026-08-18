@@ -23,7 +23,7 @@ def test_web_runner_rejects_an_out_of_bounds_limit(monkeypatch):
     response = client.post("/api/run", json={"video_source": "https://media.example/demo.mp4", "limit": 7})
 
     assert response.status_code == 400
-    assert "between 1 and 6" in response.get_json()["error"]
+    assert "between 1 and 3" in response.get_json()["error"]
 
 
 def test_web_runner_requires_explicit_operator_gate(monkeypatch):
@@ -61,14 +61,14 @@ def test_public_showcase_serves_three_fixture_backed_runs_and_full_pages(monkeyp
     assert len(runs.get_json()) == 3
     assert clips.get_json() == server.prepared_run("trail-essentials-v1")["clips"]
     assert client.get("/api/clips?run=unknown").status_code == 404
-    assert b"Prepared examples" in client.get("/").data
+    assert b"UPLOAD VIDEO" in client.get("/").data
     assert b"Prepared examples" in client.get("/api/showcase").data
     assert b"Prepared examples" in client.get("/api/showcase/results").data
     for asset in ("home-tabletop.svg", "trail-essentials.svg", "focus-desk.svg"):
         assert client.get(f"/assets/{asset}").status_code == 200
 
 
-def test_public_showcase_run_is_disabled_before_any_source_validation(monkeypatch):
+def test_public_run_is_disabled_before_any_source_validation_without_services(monkeypatch):
     monkeypatch.setenv("VERCEL", "1")
 
     def should_not_validate(_: str) -> str:
@@ -81,26 +81,28 @@ def test_public_showcase_run_is_disabled_before_any_source_validation(monkeypatc
     assert "disabled" in response.get_json()["error"]
 
 
-def test_web_runner_marks_running_before_starting_worker(monkeypatch):
+def test_web_runner_creates_a_durable_job(monkeypatch):
     observed = {}
-
-    class FakeThread:
-        def __init__(self, *, target, daemon):
-            self.target = target
-            self.daemon = daemon
-
-        def start(self):
-            observed.update(server._state)
-
-    server._set_state("idle", "Ready.")
     monkeypatch.setattr(server.config, "validate_web_video_source", lambda value: value)
     monkeypatch.setattr(server.config, "processing_enabled", lambda: True)
-    monkeypatch.setattr(server.threading, "Thread", FakeThread)
+    def fake_create_run(**kwargs):
+        observed.update(kwargs)
+        return {"id": "c35bc73f-50bf-48eb-90bd-639afc51c0c7", "status": "queued"}
+    monkeypatch.setattr(server, "create_run", fake_create_run)
 
     response = server.app.test_client().post(
         "/api/run", json={"video_source": "https://media.example/demo.mp4", "limit": 1}
     )
 
+    assert response.status_code == 202
+    assert observed["product_limit"] == 1
+    assert observed["video_source"] == "https://media.example/demo.mp4"
+
+
+def test_process_endpoint_returns_durable_state(monkeypatch):
+    monkeypatch.setattr(server.config, "processing_enabled", lambda: True)
+    monkeypatch.setattr(server, "process_next", lambda run_id: {"id": run_id, "status": "queued", "step": "product"})
+    run_id = "c35bc73f-50bf-48eb-90bd-639afc51c0c7"
+    response = server.app.test_client().post(f"/api/run/{run_id}/process")
     assert response.status_code == 200
-    assert observed["status"] == "running"
-    server._set_state("idle", "Ready.")
+    assert response.get_json()["step"] == "product"

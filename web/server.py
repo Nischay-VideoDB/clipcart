@@ -15,6 +15,7 @@ import logging
 import os
 import sys
 import threading
+import uuid
 from pathlib import Path
 
 from flask import Flask, jsonify, request, send_from_directory
@@ -33,6 +34,7 @@ from clipcart.prepared_demo import (  # noqa: E402
     prepared_runs,
 )
 from clipcart.pipeline import run as run_pipeline  # noqa: E402
+from clipcart.jobs import create_run, get_run, init_jobs, process_next  # noqa: E402
 
 app = Flask(__name__, static_folder=str(ROOT / "web"))
 logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
@@ -70,9 +72,8 @@ def _prepared_run_response(run_id: str | None):
 
 @app.route("/")
 def index():
-    """Serve prepared examples publicly and the live workflow locally."""
-    page = "results.html" if config.public_showcase() else "index.html"
-    return send_from_directory(str(ROOT / "web"), page)
+    """Serve the live workflow; prepared examples are an additive route."""
+    return send_from_directory(str(ROOT / "web"), "index.html")
 
 
 @app.route("/api/showcase")
@@ -108,8 +109,17 @@ def output_files(filename: str):
 @app.route("/api/clips")
 def get_clips():
     """Return the current clips.json or an empty list."""
-    if config.public_showcase():
-        selected_run = _prepared_run_response(request.args.get("run"))
+    selected_id = request.args.get("run")
+    if selected_id:
+        selected_run = _prepared_run_response(selected_id)
+        if selected_run is not None:
+            return jsonify(selected_run["clips"])
+        live_run = get_run(selected_id) if config.processing_enabled() else None
+        if live_run is None:
+            return jsonify({"error": "Unknown run."}), 404
+        return jsonify(live_run["clips"])
+    if os.getenv("VERCEL"):
+        selected_run = _prepared_run_response(None)
         if selected_run is None:
             return jsonify({"error": "Unknown prepared example."}), 404
         return jsonify(selected_run["clips"])
@@ -128,7 +138,13 @@ def get_prepared_runs():
 @app.route("/api/status")
 def get_status():
     """Return current pipeline status."""
-    if config.public_showcase():
+    run_id = request.args.get("run")
+    if run_id and config.processing_enabled():
+        live_run = get_run(run_id)
+        if live_run is None:
+            return jsonify({"error": "Unknown run."}), 404
+        return jsonify({**live_run, "mode": "live"})
+    if os.getenv("VERCEL"):
         return jsonify({
             "status": "done",
             "message": "Prepared illustrative demo - not a live VideoDB/provider run.",
@@ -147,16 +163,16 @@ def capabilities():
         "mode": "operator" if enabled else "showcase",
         "processing_enabled": enabled,
         "message": (
-            "Local operator processing is enabled."
+            "Durable live processing is enabled; prepared examples remain available."
             if enabled
-            else "This is a prepared-data showcase. Live processing is disabled."
+            else "Live processing is unavailable because required server services are not configured."
         ),
     })
 
 
 @app.route("/api/run", methods=["POST"])
 def start_run():
-    """Start the pipeline in a background thread.
+    """Create an idempotent durable run. Provider work is executed by step calls.
 
     Expected JSON body:
         video_source (str): URL or local file path.
@@ -167,10 +183,6 @@ def start_run():
         return jsonify({
             "error": "Live processing is disabled in this prepared-data showcase. Run the local operator workflow with CLIPCART_ALLOW_PROCESSING=true.",
         }), 403
-
-    with _lock:
-        if _state["status"] == "running":
-            return jsonify({"error": "Pipeline already running."}), 409
 
     body = request.get_json(silent=True) or {}
     source_value = body.get("video_source")
@@ -185,26 +197,32 @@ def start_run():
         return jsonify({"error": f"Products must be between 1 and {config.DEFAULT_LIMIT}."}), 400
     no_image_verify = body.get("no_image_verify", False) is True
 
-    def _run():
-        _set_state("running", "Preparing the video for analysis.", progress=5)
-        try:
-            clips = run_pipeline(
-                video_source=video_source,
-                limit=limit,
-                out_path=str(config.clips_output_path()),
-                use_image_verify=not no_image_verify,
-            )
-            _set_state("done", f"Done — {len(clips)} clip(s) generated.", progress=100)
-        except Exception as exc:
-            logger.exception("Pipeline failed")
-            _set_state("error", "The pipeline could not complete. Review server logs and try again.", progress=0)
+    idem = request.headers.get("Idempotency-Key", "").strip()
+    if not idem:
+        idem = str(uuid.uuid4())
+    if len(idem) > 120:
+        return jsonify({"error": "Idempotency-Key must be at most 120 characters."}), 400
+    requester = request.headers.get("X-Forwarded-For", request.remote_addr or "anonymous").split(",")[0].strip()
+    try:
+        created = create_run(
+            video_source=video_source, product_limit=limit,
+            skip_image_verify=no_image_verify, idempotency_key=idem, requester=requester,
+        )
+    except PermissionError as exc:
+        return jsonify({"error": str(exc)}), 429
+    return jsonify(created), 202
 
-    with _lock:
-        if _state["status"] == "running":
-            return jsonify({"error": "Pipeline already running."}), 409
-        _state.update({"status": "running", "message": "Preparing the video for analysis.", "progress": 5})
-        threading.Thread(target=_run, daemon=True).start()
-    return jsonify({"status": "running", "message": "Pipeline started."})
+
+@app.route("/api/run/<run_id>/process", methods=["POST"])
+def process_run_step(run_id: str):
+    """Execute or retry one leased, durable provider step."""
+    if not config.processing_enabled():
+        return jsonify({"error": "Live processing is not configured."}), 503
+    try:
+        result = process_next(run_id)
+    except (ValueError, KeyError):
+        return jsonify({"error": "Unknown run."}), 404
+    return jsonify(result)
 
 
 if __name__ == "__main__":
