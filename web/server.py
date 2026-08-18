@@ -103,6 +103,12 @@ def static_files(filename: str):
 @app.route("/output/<path:filename>")
 def output_files(filename: str):
     """Serve generated output files (clips.json, etc.)."""
+    if os.getenv("VERCEL"):
+        return jsonify({
+            "error": "Filesystem output is not durable on the hosted workflow.",
+            "requested_file": filename,
+            "replacement": "/api/clips?run=<run-id>",
+        }), 410
     return send_from_directory(str(_output_dir()), filename)
 
 

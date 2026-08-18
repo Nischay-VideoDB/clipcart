@@ -71,7 +71,10 @@ def test_vercel_routes_the_full_prepared_pages_through_the_function():
         "/favicon.ico": "/favicon.svg",
         "/": "/api/index.py",
         "/results.html": "/api/index.py?path=showcase/results",
+        "/index.html": "/api/index.py",
         "/api/:path*": "/api/index.py",
+        "/output/:path*": "/api/index.py",
+        "/:path*": "/api/index.py",
     }
 
 

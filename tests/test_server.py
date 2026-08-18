@@ -68,6 +68,19 @@ def test_public_showcase_serves_three_fixture_backed_runs_and_full_pages(monkeyp
         assert client.get(f"/assets/{asset}").status_code == 200
 
 
+def test_hosted_legacy_output_path_fails_with_durable_api_guidance(monkeypatch):
+    monkeypatch.setenv("VERCEL", "1")
+
+    response = server.app.test_client().get("/output/clips.json")
+
+    assert response.status_code == 410
+    assert response.get_json() == {
+        "error": "Filesystem output is not durable on the hosted workflow.",
+        "requested_file": "clips.json",
+        "replacement": "/api/clips?run=<run-id>",
+    }
+
+
 def test_public_run_is_disabled_before_any_source_validation_without_services(monkeypatch):
     monkeypatch.setenv("VERCEL", "1")
 
