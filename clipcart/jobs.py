@@ -70,6 +70,15 @@ def create_run(
     init_jobs()
     identity = requester_hash(requester)
     with psycopg.connect(_database_url(), row_factory=dict_row) as conn:
+        # An idempotent replay must remain retrievable after the requester has
+        # reached the creation quota. The key is an unguessable client token and
+        # never starts another provider run.
+        existing = conn.execute(
+            "SELECT * FROM clipcart_runs WHERE idempotency_key=%s",
+            (idempotency_key,),
+        ).fetchone()
+        if existing:
+            return _public(existing)
         recent = conn.execute(
             "SELECT count(*) AS n FROM clipcart_runs WHERE requester_hash=%s AND created_at > now() - interval '1 hour'",
             (identity,),
