@@ -66,6 +66,19 @@ def find_product_window(
     end = max(best_shot.end, start + min_len)
     if (end - start) > max_len:
         end = start + max_len
+    # Provider clips may be shorter than the desired window. VideoDB rejects an
+    # end timestamp beyond the real source duration, so clamp and backfill the
+    # start while preserving as much context as the source actually contains.
+    try:
+        duration = float(getattr(video, "length", 0) or 0)
+    except (TypeError, ValueError):
+        duration = 0
+    if duration > 0 and end > duration:
+        end = duration
+        start = max(0.0, min(start, end - min(min_len, end)))
+    if end <= start:
+        logger.warning("Matched window for %r is outside the source duration — skipping.", name)
+        return None
 
     logger.info(
         "Matched %r -> window %.1fs–%.1fs (%.1fs)",
